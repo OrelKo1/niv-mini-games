@@ -14,6 +14,7 @@ import {
   step,
   STEP_MS,
 } from "./engine";
+import { MAZE_W, MAZE_H } from "./maze";
 import type { Dir, PacNivState } from "./types";
 
 const CELL = 14;
@@ -92,10 +93,10 @@ export function PacNivRenderer() {
         } else if (t === "pellet") {
           ctx.fillStyle = "#ffd166";
           ctx.beginPath();
-          ctx.arc(px + CELL / 2, py + CELL / 2, 1.5, 0, Math.PI * 2);
+          ctx.arc(px + CELL / 2, py + CELL / 2, 2, 0, Math.PI * 2);
           ctx.fill();
         } else if (t === "power") {
-          const r = 3.5 + Math.sin(pulse) * 1.2;
+          const r = 4.5 + Math.sin(pulse) * 1.2;
           ctx.fillStyle = "#f4f4f4";
           ctx.beginPath();
           ctx.arc(px + CELL / 2, py + CELL / 2, r, 0, Math.PI * 2);
@@ -104,15 +105,25 @@ export function PacNivRenderer() {
       }
     }
 
-    // player
+    // player (sprite drawn at 1.4× cell so Niv overlaps neighbors slightly,
+    // matching the chunkier feel of the original Pac-Man sprite)
     const px = s.player.x * CELL;
     const py = s.player.y * CELL;
+    const SPRITE_OVER = 1.4;
+    const sw = CELL * SPRITE_OVER;
+    const sh = CELL * SPRITE_OVER;
     if (avatarRef.current) {
-      ctx.drawImage(avatarRef.current, px, py, CELL, CELL);
+      ctx.drawImage(
+        avatarRef.current,
+        px - (sw - CELL) / 2,
+        py - (sh - CELL) / 2,
+        sw,
+        sh
+      );
     } else {
       ctx.fillStyle = "#ffd166";
       ctx.beginPath();
-      ctx.arc(px + CELL / 2, py + CELL / 2, CELL / 2 - 1, 0, Math.PI * 2);
+      ctx.arc(px + CELL / 2, py + CELL / 2, sw / 2 - 1, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -212,28 +223,26 @@ export function PacNivRenderer() {
     if (typeof window !== "undefined") window.location.href = "/";
   }, []);
 
-  const stateW = stateRef.current.width * CELL;
-  const stateH = stateRef.current.height * CELL;
-
   return (
     <GameFrame title="PAC-NIV" score={score} highScore={highScore}>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="relative"
-          style={{ width: stateW, height: stateH, maxWidth: "100%" }}
-        >
-          <canvas
-            ref={canvasRef}
-            width={stateW}
-            height={stateH}
-            className="image-pixelated"
+      <div className="absolute inset-0 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-2">
+          <div
+            className="relative"
             style={{
-              width: "100%",
-              height: "auto",
-              imageRendering: "pixelated",
+              width: "min(95vw, 78dvh)",
+              aspectRatio: `${MAZE_W} / ${MAZE_H}`,
             }}
-          />
-          <TouchPad onSwipe={handleSwipe} />
+          >
+            <canvas
+              ref={canvasRef}
+              width={MAZE_W * CELL}
+              height={MAZE_H * CELL}
+              className="w-full h-full image-pixelated"
+              style={{ imageRendering: "pixelated" }}
+            />
+            <TouchPad onSwipe={handleSwipe} />
+          </div>
         </div>
         <div className="absolute top-2 left-2 text-[8px] text-arcade-yellow tabular-nums z-10">
           LIVES {lives} · LV {stateRef.current.level}
