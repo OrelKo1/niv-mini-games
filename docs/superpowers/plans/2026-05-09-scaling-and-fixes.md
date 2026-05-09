@@ -1,12 +1,12 @@
-# Nivtendo — Scaling & Fixes Plan
+# Nivtendo — Scaling & Fixes Plan (v2 after review)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Game tasks (3-7) are independent and dispatched as parallel subagents. Tasks 1-2 run first (bug fix + shared infra). Tasks 8-9 run last (verify + deploy).
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Tasks 1-2 are sequential (bug fix + shared helper). Tasks 3-7 are independent and dispatch as parallel subagents. Tasks 8-9 are sequential (verify + deploy).
 
-**Goal:** Make Nivtendo's UI mobile-first in spirit, not just in width — bigger Niv faces, bigger memes, bigger bricks, smoother controls. Fix the game-breaking Memory bug. Rotate Niv faces in games where the same face shows over and over.
+**Goal:** Make Nivtendo readable on mobile — bigger Niv faces, bigger memes, bigger bricks, smoother controls — without changing game topology that already works. Fix the game-breaking Memory bug. Rotate Niv faces in games where the same face shows over and over.
 
-**Architecture:** Each fix is scoped to one game (or a tiny shared helper). All renderers move from fixed cell sizes to viewport-fit canvases. We shrink the play-grids (Pac-Niv 28×31 → 17×19; Snake-Niv 20×20 → 12×12) so each cell — and thus each Niv head — is dramatically larger. We add an on-screen D-pad for Snake. We slow Whack-a-Niv's start and rotate Niv faces per spawn. We rotate Niv faces per game in Tic-Tac-Toe. We re-shape Brick-Niv to leave room for a Niv portrait beside the play area and bump label font size. The Memory bug (effect returns early on match-with-caption, never schedules resolve) is a one-line fix.
+**Architecture insight (from reviewer + user feedback):** Don't redraw maze layouts by hand — keep the canonical Google-doodle / classic-arcade geometries (Pac-Man 28×31, Snake 15×17) since those topologies are tested by millions of players and our engines already implement their rules correctly. The actual fix is **CSS-scaled canvases + bigger sprites**: render the canvas at its logical pixel size and apply `width: 95vmin` / `max-width` etc. so it visually fills mobile viewports. Niv's face becomes 2-3× bigger without one line of game-logic change. References: Google Pac-Man Doodle (2010), Google Snake (2019 anniversary).
 
-**Tech Stack:** Same as before — Next.js 16, TS, Tailwind, Canvas 2D, Zustand. No new deps.
+**Tech Stack:** Same as before. No new deps.
 
 **Spec:** `docs/superpowers/specs/2026-05-09-nivtendo-design.md`. **Site:** https://niv-mini-games.vercel.app. **Repo:** https://github.com/OrelKo1/niv-mini-games.
 
@@ -15,11 +15,25 @@
 ## Conventions
 
 - **Working dir:** `/Users/orelkozachi/Desktop/OREL/code_projects/claude_active_projects/niv_mini_games`
-- **Commit style:** Conventional Commits (`fix(snake-niv):`, `feat(pac-niv):`, etc.)
-- **Test runner:** `pnpm test` (vitest), `pnpm typecheck`, `pnpm build`.
-- **Author:** `git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "..."`
-- **Don't break:** Manifest types in `lib/niv-types.ts`, store schema (`lib/store/use-niv-store.ts`), achievement engine, video splash, UnlockToast, GameFrame. Update them only if essential — never break their public API.
-- **TDD:** Apply to deterministic engine logic. Renderer changes get verified in browser via `pnpm dev` + manual smoke.
+- **Commit author:** `git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "..."`
+- **Test runner:** `pnpm test`, `pnpm typecheck`, `pnpm build`.
+- **Don't break:** `lib/niv-types.ts`, store schema, achievement engine, video splash, UnlockToast. Don't refactor maze geometry. Don't change engine signatures unless a task explicitly says to.
+- **TDD scope:** apply to deterministic logic. Visual scaling verified in browser.
+
+---
+
+## What review found (and how this v2 addresses it)
+
+| Reviewer blocker | Fix in v2 |
+|---|---|
+| New 17×19 Pac maze had dead ghost-house topology | **Don't rewrite the maze.** Keep canonical 28×31. Scale visually via CSS only. |
+| New maze tunnel collided with ghost spawn row | Same — irrelevant once we keep the canonical layout. |
+| Pac-Niv `engine.test.ts` "ghosts move" assertion would fail | No test changes needed. |
+| Whack signature change breaks 5 existing test call sites | Plan now patches all 5 sites explicitly. |
+| Pac-Niv `cell` state had stale-closure issue | Avoided entirely — `CELL` stays a constant; the `<canvas>` is CSS-scaled. |
+| Brick side-panel breaks `<TouchPad>` pan math | Drop side panel. Fix `onPan` to use canvas `getBoundingClientRect()`. Bigger labels + fewer cols. |
+| Lobby + trophy room readability not addressed | New Phase 7.5 bumps base font size + touch target sizes. |
+| Brick paddle face hardcoded to single asset | Wire paddle to face-pool too. |
 
 ---
 
@@ -27,49 +41,26 @@
 
 | Path | What changes |
 |---|---|
-| `app/niv-memory/page.tsx` | One-line fix in resolve effect |
-| `lib/niv/face-pool.ts` (new) | Shared helper to pick rotating Niv faces from the manifest |
-| `games/pac-niv/maze.ts` | Replace 28×31 layout with new compact 17×19 layout |
-| `games/pac-niv/Renderer.tsx` | Viewport-fit canvas, larger cells; render Niv head bigger |
-| `games/pac-niv/engine.ts` | Adjust `MAZE_W`/`MAZE_H` references and ghost spawn coords if hard-coded |
-| `games/pac-niv/engine.test.ts` | Update tests that hard-code old maze positions |
-| `games/snake-niv/types.ts` | Reduce `GRID` from 20 to 12 |
-| `games/snake-niv/Renderer.tsx` | Viewport-fit canvas + visible on-screen D-pad |
-| `games/whack-a-niv/types.ts` | Reduce initial spawn probability + add ramp constant |
-| `games/whack-a-niv/engine.ts` | Use ramped probability based on time-elapsed; pick random face per spawn |
-| `games/whack-a-niv/Holes.tsx` | Render the per-hole asset (already passed in) — verify reads `hole.asset` |
-| `app/whack-a-niv/page.tsx` | Pick a fresh asset for each spawn |
-| `games/niv-tac-toe/Board.tsx` | Use a per-game Niv face (passed as prop) |
-| `app/niv-tac-toe/page.tsx` | Re-pick the face on every fresh game |
-| `games/brick-niv/engine.ts` | Reduce columns from 8 → 5; widen bricks |
-| `games/brick-niv/Renderer.tsx` | Bigger label font, wider cells, side-panel Niv portrait |
-| `app/brick-niv/page.tsx` | Layout adjustment if needed |
-
----
-
-## Phase 0 — Pre-flight (reverse-engineer current state)
-
-### Task 0.1: Inventory current sizing constants
-
-**Files:** none (read-only)
-
-- [ ] **Step 1:** Confirm current values
-
-Run:
-```bash
-grep -n "CELL\|GRID\|MAZE_\|SPAWN_P\|FONT" \
-  games/pac-niv/Renderer.tsx \
-  games/pac-niv/maze.ts \
-  games/snake-niv/types.ts \
-  games/snake-niv/Renderer.tsx \
-  games/whack-a-niv/types.ts \
-  games/whack-a-niv/engine.ts \
-  games/brick-niv/Renderer.tsx
-```
-
-Expected (known): Pac-Niv `CELL = 14`, maze 28×31. Whack `SPAWN_P_PER_TICK = 0.04`. Snake `GRID = 20` (verify). Brick label font ≤8px (verify).
-
-- [ ] **Step 2:** Note values in your scratch space — informs Phase 2-7 changes.
+| `app/niv-memory/page.tsx` | Bug fix in resolve effect |
+| `lib/niv/face-pool.ts` (new) | Rotating Niv-face helper |
+| `lib/niv/face-pool.test.ts` (new) | Helper unit tests |
+| `games/pac-niv/Renderer.tsx` | CSS-scaled canvas + bigger Niv sprite |
+| `games/snake-niv/types.ts` | `GRID = 15` (Google Snake doodle uses 15×17) |
+| `games/snake-niv/Renderer.tsx` | CSS-scaled canvas + visible D-pad |
+| `games/snake-niv/engine.test.ts` | Adjust if any test asserts spawn-position equals old `(10, 10)` |
+| `components/arcade/DPad.tsx` (new) | Reusable on-screen D-pad |
+| `games/whack-a-niv/types.ts` | `SPAWN_P_START` / `SPAWN_P_END` constants |
+| `games/whack-a-niv/engine.ts` | Ramped spawn-probability + `pickAsset` parameter |
+| `games/whack-a-niv/engine.test.ts` | All `step()` callers patched |
+| `app/whack-a-niv/page.tsx` | Pass `pickFaceForGame` as `pickAsset` |
+| `games/niv-tac-toe/Board.tsx` | Accepts `faceUrl` prop |
+| `app/niv-tac-toe/page.tsx` | Re-pick face on game start / restart |
+| `games/brick-niv/engine.ts` | `BRICK_COLS = 5` (was 8) |
+| `games/brick-niv/Renderer.tsx` | Bigger label font; rotating paddle face |
+| `app/brick-niv/page.tsx` | `onPan` uses canvas rect; remove side-panel idea |
+| `app/page.tsx` | Bigger title, bigger menu tiles |
+| `app/trophies/page.tsx` | Bigger cards, bigger captions |
+| `components/arcade/GameFrame.tsx` | Header text-size bump |
 
 ---
 
@@ -78,45 +69,18 @@ Expected (known): Pac-Niv `CELL = 14`, maze 28×31. Whack `SPAWN_P_PER_TICK = 0.
 ### Task 1.1: Fix `niv-memory` stuck-after-first-match
 
 **Files:**
-- Modify: `app/niv-memory/page.tsx:184-192` (the `if (isMatch && first)` block in the resolve `useEffect`)
+- Modify: `app/niv-memory/page.tsx:172-204`
 
-The current branch sets a banner timeout and `return () => clearTimeout(t);` — exiting the effect BEFORE the resolve `setTimeout` is scheduled. So after the first match, `state.firstSelection`/`secondSelection` stay set, `bothSelected(state)` keeps returning true, and `onFlip` is blocked forever.
+The current resolve effect's match-with-caption branch returns early before scheduling resolve. After a match, `firstSelection`/`secondSelection` stay set forever and `bothSelected(state)` keeps blocking new flips.
 
-- [ ] **Step 1:** Open `app/niv-memory/page.tsx`, locate the effect at line 172.
+- [ ] **Step 1:** Read `app/niv-memory/page.tsx` lines 172-210.
 
-- [ ] **Step 2:** Replace this block:
-
-```tsx
-    // If it's a match: short pause, then resolve
-    // If mismatch: longer pause to let player see the cards
-    const delay = isMatch ? 400 : REVEAL_MS;
-
-    // show caption banner if the matched card has one
-    if (isMatch && first) {
-      const cap = slugToCaption.get(first.slug);
-      if (cap) {
-        setBanner(cap);
-        const t = setTimeout(() => setBanner(null), 1500);
-        // we cleanup on next effect run
-        return () => clearTimeout(t);
-      }
-    }
-
-    const t = setTimeout(() => {
-      setState((prev) => {
-        if (!prev) return prev;
-        if (!bothSelected(prev)) return prev;
-        const wasFirstMatch = prev.streak === 0; // tracking only — fired below
-        void wasFirstMatch;
-        return resolve(prev);
-      });
-    }, delay);
-    return () => clearTimeout(t);
-```
-
-with this — banner and resolve coexist:
+- [ ] **Step 2:** Replace the resolve `useEffect` body (between `if (!bothSelected(state)) return;` and the closing `}, [state, slugToCaption]);`) with this:
 
 ```tsx
+    const first = state.cards.find((c) => c.id === state.firstSelection);
+    const second = state.cards.find((c) => c.id === state.secondSelection);
+    const isMatch = first && second && first.slug === second.slug;
     const delay = isMatch ? 400 : REVEAL_MS;
 
     let bannerTimer: ReturnType<typeof setTimeout> | undefined;
@@ -142,17 +106,12 @@ with this — banner and resolve coexist:
     };
 ```
 
-- [ ] **Step 3:** Smoke-test in browser
+- [ ] **Step 3:** Smoke test:
 
 ```bash
 pnpm dev
 ```
-Open http://localhost:3000/niv-memory in mobile devtools (390×844). Start an EASY board. Match two cards. Verify:
-- Banner shows the caption
-- Cards stay matched (visual: opacity/grayscale or matched style)
-- You can flip the next card immediately
-
-Kill server.
+Visit `/niv-memory` (mobile devtools 390×844). Start EASY. Match two cards. Verify banner shows + cards stay matched + you can flip the next card immediately. Kill server.
 
 - [ ] **Step 4:** Commit
 
@@ -163,20 +122,17 @@ git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "
 
 ---
 
-## Phase 2 — Shared helper
+## Phase 2 — Shared face-pool helper
 
-### Task 2.1: `lib/niv/face-pool.ts` — rotating Niv face helper
+### Task 2.1: `lib/niv/face-pool.ts`
 
 **Files:**
 - Create: `lib/niv/face-pool.ts`
 - Create: `lib/niv/face-pool.test.ts`
 
-A small, testable utility used by Whack-a-Niv, Tic-Tac-Niv, and (optionally) other games for rotating Niv faces.
-
-- [ ] **Step 1:** Test first
+- [ ] **Step 1:** Test first — `lib/niv/face-pool.test.ts`:
 
 ```ts
-// lib/niv/face-pool.test.ts
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("../niv-manifest", () => ({
@@ -195,12 +151,10 @@ import { pickFace, pickFaces, pickFaceForGame } from "./face-pool";
 
 describe("face-pool", () => {
   it("pickFace returns one asset using the rng", () => {
-    const f = pickFace(() => 0);
-    expect(f.slug).toBe("a");
+    expect(pickFace(() => 0).slug).toBe("a");
   });
   it("pickFace picks deterministically from rng", () => {
-    const f = pickFace(() => 0.99);
-    expect(f.slug).toBe("c");
+    expect(pickFace(() => 0.99).slug).toBe("c");
   });
   it("pickFaces returns N unique assets", () => {
     const arr = pickFaces(2, () => 0.5);
@@ -209,21 +163,20 @@ describe("face-pool", () => {
   });
   it("pickFaceForGame prefers game-tagged assets, falls back when none exist", () => {
     expect(pickFaceForGame("whack-a-niv", () => 0).slug).toBe("b");
-    expect(pickFaceForGame("brick-niv", () => 0).slug).toBe("a"); // no brick assets in mock — falls back
+    expect(pickFaceForGame("brick-niv", () => 0).slug).toBe("a");
   });
 });
 ```
 
-- [ ] **Step 2:** Run — fails (module missing).
+- [ ] **Step 2:** Run — fails.
 
 ```bash
 pnpm test lib/niv/face-pool.test.ts
 ```
 
-- [ ] **Step 3:** Implement
+- [ ] **Step 3:** Implement — `lib/niv/face-pool.ts`:
 
 ```ts
-// lib/niv/face-pool.ts
 import { NIV_MANIFEST } from "../niv-manifest";
 import type { GameId, NivAsset } from "../niv-types";
 
@@ -252,7 +205,7 @@ export function pickFaceForGame(game: GameId, rng: () => number = Math.random): 
 }
 ```
 
-- [ ] **Step 4:** Tests pass.
+- [ ] **Step 4:** Run again — passes.
 
 ```bash
 pnpm test lib/niv/face-pool.test.ts
@@ -261,220 +214,128 @@ pnpm test lib/niv/face-pool.test.ts
 - [ ] **Step 5:** Commit
 
 ```bash
-git add lib/niv/face-pool.ts lib/niv/face-pool.test.ts
+git add lib/niv
 git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(lib): rotating niv face-pool helper"
 ```
 
 ---
 
-## Phase 3 — Pac-Niv: smaller maze, bigger sprites
+## Phase 3 — Pac-Niv: CSS-scale the canonical 28×31 canvas
 
-### Task 3.1: Replace 28×31 maze with compact 17×19
-
-**Files:**
-- Modify: `games/pac-niv/maze.ts` (full rewrite)
-- Possibly modify: `games/pac-niv/engine.ts` if it hard-codes dimensions or specific coordinates outside MAZE_W/MAZE_H.
-- Possibly modify: `games/pac-niv/engine.test.ts` if a test references hard-coded coordinates.
-
-**Why:** 28×31 cells × 14px = 392px wide. On a 390px portrait viewport that's barely playable. With a 17×19 maze and viewport-fit cell sizing, each Niv head doubles in size.
-
-- [ ] **Step 1:** Read current `engine.ts` to find any hard-coded coordinates that depend on the old layout (e.g. tunnel row constants, ghost-house positions). Note them.
-
-```bash
-grep -n "MAZE_W\|MAZE_H\|tunnel\|ghostHouse\|spawn" games/pac-niv/engine.ts
-```
-
-- [ ] **Step 2:** Rewrite `games/pac-niv/maze.ts` with this layout:
-
-```ts
-// Pac-Niv compact maze — 17 wide × 19 tall.
-// Tighter than the classic Pac-Man footprint so on mobile each cell renders
-// big enough to actually see Niv's face on the player sprite.
-// Legend (unchanged):
-//   #  wall
-//   .  pellet
-//   o  power pellet
-//   ' ' empty (corridor without pellet, e.g. tunnels, ghost-house exit)
-//   P  player spawn (single)
-//   G  ghost spawn (in/near the ghost house)
-//   -  ghost-house door
-
-export const MAZE_W = 17;
-export const MAZE_H = 19;
-
-export const MAZE_LAYOUT: string[] = [
-  "#################", //  0
-  "#o.....#.#.....o#", //  1
-  "#.###.##.##.###.#", //  2
-  "#...............#", //  3
-  "#.##.###.###.##.#", //  4
-  "#....#.....#....#", //  5
-  "####.#.###.#.####", //  6
-  "   #.# #G# #.#   ", //  7
-  "####.# #G# #.####", //  8
-  ".......#G#.......", //  9  tunnel row
-  "####.# ### #.####", // 10
-  "   #.#     #.#   ", // 11
-  "####.#.###.#.####", // 12
-  "#......#P#......#", // 13
-  "#.###.##.##.###.#", // 14
-  "#.#.............#", // 15
-  "#.#.##.###.##.#.#", // 16
-  "#o....#...#....o#", // 17
-  "#################", // 18
-];
-```
-
-(Each row is exactly 17 chars including spaces; 19 rows.)
-
-- [ ] **Step 3:** If `engine.ts` references coordinates outside `MAZE_W`/`MAZE_H` (e.g. a hard-coded tunnel row, a ghost-house exit point, or specific pellet counts), update them:
-
-  - Tunnel row (player wraps left↔right): the new layout uses **row 9**.
-  - Player spawn `P` is at **(13, 13)** (read from the layout: row 13, column 13). The engine's existing `parseMaze` should detect this from `'P'` automatically — no manual update needed if `parseMaze` is generic. Verify by reading `engine.ts` around the parsing call.
-  - Ghost-house cells `G` exist at rows 7-9 inside the central box. If `engine.ts` exposes a `GHOST_HOUSE_EXIT_Y = 11` constant or similar from the old maze, change it to **row 8** (the row immediately above the ghost-house corridor in the new layout). If no such constant exists, skip.
-
-- [ ] **Step 4:** Update tests in `games/pac-niv/engine.test.ts` if they hard-code coordinates. Read the test file:
-
-```bash
-grep -n "spawn\|MAZE_\|x:\s*[0-9]" games/pac-niv/engine.test.ts
-```
-
-For any test that asserts the player starts at a specific (x, y), update to use the new spawn coordinates derived from `parseMaze(MAZE_LAYOUT)` rather than hard-coded numbers — if the test uses a constant, replace with `parsed.playerSpawn.x` style lookups.
-
-- [ ] **Step 5:** Run tests
-
-```bash
-pnpm test games/pac-niv
-```
-
-Fix until green. (If a test relies on the old maze having ≥240 pellets, adjust the assertion — count pellets in the new layout: each `.` is one pellet.)
-
-- [ ] **Step 6:** Don't commit yet — Task 3.2 also touches Pac-Niv files.
-
-### Task 3.2: Viewport-fit Pac-Niv renderer
+### Task 3.1: Make canvas fill the viewport via CSS
 
 **Files:**
 - Modify: `games/pac-niv/Renderer.tsx`
 
-- [ ] **Step 1:** Locate the line `const CELL = 14;` near the top.
+**Strategy:** keep `CELL = 14` (logical pixels) and the canonical 28×31 maze unchanged — that's the Google Pac-Man Doodle layout, fully tested. Add a CSS-scaled wrapper so the visual size on mobile is `min(95vw, 78vh)` regardless of internal pixel count.
 
-- [ ] **Step 2:** Replace fixed `CELL` with a viewport-aware sizing block. Inside the canvas-init effect (or before the first render), compute:
+- [ ] **Step 1:** Read `games/pac-niv/Renderer.tsx` and find the `<canvas>` element + its parent `<div>`.
 
-```ts
-// Replace `const CELL = 14;` and any direct uses of CELL.
-// Within the component body (top of the function):
-const containerRef = useRef<HTMLDivElement>(null);
-const [cell, setCell] = useState(20);
+- [ ] **Step 2:** Replace the canvas's container with a CSS-scaled wrapper. The internal `<canvas width={MAZE_W*CELL} height={MAZE_H*CELL}>` keeps its logical pixel dimensions; the wrapper applies CSS sizing:
 
-useEffect(() => {
-  const update = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    // 96% of available width / height inside the play area
-    const usableW = rect.width * 0.96;
-    const usableH = rect.height * 0.96;
-    const next = Math.max(
-      14,
-      Math.floor(Math.min(usableW / MAZE_W, usableH / MAZE_H))
-    );
-    setCell(next);
-  };
-  update();
-  window.addEventListener("resize", update);
-  window.addEventListener("orientationchange", update);
-  return () => {
-    window.removeEventListener("resize", update);
-    window.removeEventListener("orientationchange", update);
-  };
-}, []);
+```tsx
+<div className="flex-1 flex items-center justify-center p-2">
+  <div
+    className="relative"
+    style={{
+      width: "min(95vw, 78dvh)",
+      aspectRatio: `${MAZE_W} / ${MAZE_H}`,
+    }}
+  >
+    <canvas
+      ref={canvasRef}
+      width={MAZE_W * CELL}
+      height={MAZE_H * CELL}
+      className="w-full h-full image-pixelated"
+      style={{ imageRendering: "pixelated" }}
+    />
+    {/* TouchPad overlay (existing) — no changes */}
+  </div>
+</div>
 ```
 
-Then replace every `CELL` reference with `cell`. Wrap the `<canvas>` in a `<div ref={containerRef} className="flex-1 flex items-center justify-center">`. Set canvas `width={MAZE_W * cell}` and `height={MAZE_H * cell}`. Re-render on `cell` change (already handled by React).
+(`MAZE_W=28`, `MAZE_H=31`. `aspectRatio` is the CSS ratio so the box stays the right shape on every viewport.)
 
-- [ ] **Step 3:** Bump the player sprite (Niv head) and ghost size — they should now scale with `cell` automatically, but ensure the `ctx.drawImage(image, x, y, cell, cell)` calls use `cell` not `CELL`. Eye-blob sizes for ghosts should be `Math.max(2, cell / 6)` instead of fixed pixel values.
+- [ ] **Step 3:** Bump the Niv player sprite to 1.4× cell size for visibility. Find the line where the head is drawn (likely `ctx.drawImage(headImg, ...)`). Replace its size args:
 
-- [ ] **Step 4:** Smoke test
+```ts
+const SPRITE_OVER = 1.4;
+const sw = CELL * SPRITE_OVER;
+const sh = CELL * SPRITE_OVER;
+ctx.drawImage(
+  headImg,
+  px - (sw - CELL) / 2,
+  py - (sh - CELL) / 2,
+  sw,
+  sh
+);
+```
+
+- [ ] **Step 4:** Bump pellet + power-pellet sizes a bit (existing values like `1.5` radius become `2`, power radius from `3` to `4.5`). They're tiny on the canonical maze — values double-checked in browser.
+
+- [ ] **Step 5:** Smoke test
 
 ```bash
 pnpm dev
 ```
-On http://localhost:3000/pac-niv in 390×844 devtools: maze fills width, Niv head is clearly visible (>20px), pellets are dots, ghosts have visible color.
+Visit `/pac-niv` (390×844 devtools): maze fills near-full width, Niv face on player clearly visible (>1cm physical), pellets visible, ghosts visible.
 
-- [ ] **Step 5:** Type-check + tests
+- [ ] **Step 6:** Type-check + tests
 
 ```bash
 pnpm typecheck && pnpm test games/pac-niv
 ```
 
-- [ ] **Step 6:** Commit
+- [ ] **Step 7:** Commit
 
 ```bash
-git add games/pac-niv app/pac-niv
-git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(pac-niv): compact 17x19 maze + viewport-fit cells (bigger niv face)"
+git add games/pac-niv
+git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(pac-niv): css-scaled canvas + 1.4x sprite overlay (canonical maze unchanged)"
 ```
 
 ---
 
-## Phase 4 — Snake-Niv: smaller grid, bigger sprite, on-screen D-pad
+## Phase 4 — Snake-Niv: shrink to Google-Snake-doodle 15×17 + visible D-pad
 
-### Task 4.1: Reduce grid + viewport-fit canvas
+### Task 4.1: Reduce grid to 15
 
 **Files:**
 - Modify: `games/snake-niv/types.ts`
-- Modify: `games/snake-niv/Renderer.tsx`
-- Possibly modify: `games/snake-niv/engine.ts` (only if grid is hardcoded outside types)
+- Possibly modify: `games/snake-niv/engine.test.ts` (only if a test asserts a hard-coded spawn position outside the imported `GRID_SIZE` constant)
 
-- [ ] **Step 1:** In `games/snake-niv/types.ts`, find the `GRID` constant. Lower it from 20 to 12:
+Google Snake's anniversary doodle uses a 15×17 grid. We use a square 15×15 for portrait simplicity.
 
-```ts
-export const GRID = 12;
-```
-
-- [ ] **Step 2:** In `Renderer.tsx`, replace the fixed cell-size with a viewport-aware computation analogous to Pac-Niv:
+- [ ] **Step 1:** In `games/snake-niv/types.ts`, change:
 
 ```ts
-const containerRef = useRef<HTMLDivElement>(null);
-const [cell, setCell] = useState(28);
-
-useEffect(() => {
-  const update = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    // Reserve ~140px for the bottom D-pad we add in Task 4.2
-    const usableW = rect.width * 0.96;
-    const usableH = (rect.height - 140) * 0.96;
-    const next = Math.max(20, Math.floor(Math.min(usableW / GRID, usableH / GRID)));
-    setCell(next);
-  };
-  update();
-  window.addEventListener("resize", update);
-  window.addEventListener("orientationchange", update);
-  return () => {
-    window.removeEventListener("resize", update);
-    window.removeEventListener("orientationchange", update);
-  };
-}, []);
+export const GRID_SIZE = 15;
 ```
 
-Replace fixed cell uses with `cell`. The Niv head sprite in `drawImage(headImg, headX, headY, cell, cell)` will automatically scale up.
+(Was 20.)
 
-- [ ] **Step 3:** Tests
+- [ ] **Step 2:** Run tests — most should still pass since they import `GRID_SIZE` rather than hard-coding 20.
 
 ```bash
 pnpm test games/snake-niv
 ```
 
-If any test hard-codes `GRID === 20` or expects 20×20 specifically, update it to use the imported `GRID` constant. Re-run.
+- [ ] **Step 3:** If a test fails because the snake's initial spawn at `(7,7)` collides with a deterministic seed-spawned food, OR a test asserts `(10, 10)` literal coords, **read the failing test**, identify the literal, and either:
+  - replace the literal with `Math.floor(GRID_SIZE / 2)`-style derived values, or
+  - re-seed the test rng so food spawns elsewhere.
+
+  Example: if `engine.test.ts` line N reads `expect(state.snake[0]).toEqual({ x: 10, y: 10 })`, change to:
+  ```ts
+  const cx = Math.floor(GRID_SIZE / 2);
+  expect(state.snake[0]).toEqual({ x: cx, y: cx });
+  ```
 
 - [ ] **Step 4:** Don't commit yet — Task 4.2 also touches the renderer.
 
-### Task 4.2: Visible on-screen D-pad
+### Task 4.2: CSS-scale renderer + visible D-pad
 
 **Files:**
+- Create: `components/arcade/DPad.tsx`
 - Modify: `games/snake-niv/Renderer.tsx`
-- Or: extract a small `<DPad>` component to `components/arcade/DPad.tsx` (preferred — also useful for Pac-Niv later)
 
 - [ ] **Step 1:** Create `components/arcade/DPad.tsx`:
 
@@ -490,23 +351,16 @@ export function DPad({
   onDir: (d: Dir) => void;
   className?: string;
 }) {
-  const Btn = ({
-    dir,
-    char,
-    cls,
-  }: {
-    dir: Dir;
-    char: string;
-    cls: string;
-  }) => (
+  const Btn = ({ dir, char, cls }: { dir: Dir; char: string; cls: string }) => (
     <button
+      type="button"
       aria-label={dir}
       onPointerDown={(e) => {
         e.preventDefault();
         onDir(dir);
       }}
       className={clsx(
-        "absolute w-16 h-16 border-2 border-arcade-fg/60 bg-arcade-black/60",
+        "absolute w-16 h-16 border-2 border-arcade-fg/60 bg-arcade-black/70",
         "flex items-center justify-center text-arcade-yellow text-xl",
         "active:bg-arcade-yellow active:text-arcade-black active:border-arcade-yellow",
         "select-none touch-none",
@@ -517,12 +371,7 @@ export function DPad({
     </button>
   );
   return (
-    <div
-      className={clsx(
-        "relative w-48 h-48 mx-auto select-none touch-none",
-        className
-      )}
-    >
+    <div className={clsx("relative w-48 h-48 mx-auto select-none touch-none", className)}>
       <Btn dir="up" char="▲" cls="left-1/2 -translate-x-1/2 top-0" />
       <Btn dir="down" char="▼" cls="left-1/2 -translate-x-1/2 bottom-0" />
       <Btn dir="left" char="◄" cls="left-0 top-1/2 -translate-y-1/2" />
@@ -532,128 +381,191 @@ export function DPad({
 }
 ```
 
-- [ ] **Step 2:** In `Renderer.tsx`, import `DPad` and render it under the canvas:
+- [ ] **Step 2:** In `games/snake-niv/Renderer.tsx`, find the outer container `<div>` that holds the canvas. The current TouchPad-overlay layout uses `relative w-[min(100vmin,560px)]` (or similar) as the inner wrap. Restructure so:
+
+  - Outer container is `flex flex-col items-center justify-around py-2 gap-3 h-full`
+  - Inside: `<div>` wrap with the canvas + TouchPad (absolute fill of THAT wrap, not the page)
+  - Below the wrap: `<DPad onDir={handleDir} />` where `handleDir` is the same callback the TouchPad swipe uses (extract it to a `const handleDir = (d: Dir) => setPendingDir(d)` if not already named)
 
 ```tsx
 import { DPad } from "@/components/arcade/DPad";
-// ...
+// inside Renderer:
+const handleDir = useCallback((d: Dir) => {
+  // call the existing pending-dir setter
+  applyInputRef.current(d);
+}, []);
+
 return (
-  <div ref={containerRef} className="flex-1 flex flex-col items-center justify-between py-2">
-    <canvas ... />
-    <DPad
-      onDir={(d) => {
-        // Use the same input function the swipe handler uses.
-        // Find the existing input handler (likely setPendingDir or similar) and call it.
-        applyDirInput(d);
+  <div className="flex-1 flex flex-col items-center justify-around py-3 gap-2 w-full">
+    <div
+      className="relative"
+      style={{
+        width: "min(92vw, 60dvh)",
+        aspectRatio: "1 / 1",
       }}
-      className="mt-2"
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        width={GRID_SIZE * CELL}
+        height={GRID_SIZE * CELL}
+        className="w-full h-full image-pixelated"
+        style={{ imageRendering: "pixelated" }}
+      />
+      <TouchPad onSwipe={handleDir} />
+    </div>
+    <DPad onDir={handleDir} />
   </div>
 );
 ```
 
-Replace `applyDirInput` with whatever the existing dir-input handler is named. The swipe handler from `<TouchPad>` should keep working — D-pad is additive, not replacing. Both feed the same handler.
+(If the existing renderer uses a refactored `applyInput` already exposed as a callback, reuse it. The point: same handler for swipe and D-pad.)
 
 - [ ] **Step 3:** Smoke test
 
 ```bash
 pnpm dev
 ```
-On `/snake-niv` (390×844): Niv head visibly bigger than before, D-pad clearly tappable, both swipe AND D-pad work.
+On `/snake-niv` (390×844): canvas fills ~92vw, Niv head clearly visible (~24px CSS), D-pad below is tappable and changes direction. Swipes still work too.
 
-- [ ] **Step 4:** Commit
+- [ ] **Step 4:** Type-check + tests
+
+```bash
+pnpm typecheck && pnpm test games/snake-niv
+```
+
+- [ ] **Step 5:** Commit
 
 ```bash
 git add games/snake-niv components/arcade/DPad.tsx
-git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(snake-niv): 12x12 grid, viewport-fit canvas, on-screen d-pad controls"
+git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(snake-niv): 15x15 grid (google-snake doodle), css-scaled canvas, on-screen d-pad"
 ```
 
 ---
 
-## Phase 5 — Whack-a-Niv: rotating faces + ramped spawn pace
+## Phase 5 — Whack-a-Niv: rotating faces + ramped spawn
 
-### Task 5.1: Slower start + ramp
+### Task 5.1: Slower start ramp
 
 **Files:**
 - Modify: `games/whack-a-niv/types.ts`
 - Modify: `games/whack-a-niv/engine.ts`
-- Modify: `games/whack-a-niv/engine.test.ts` (if any test asserts specific spawn probability)
+- Modify: `games/whack-a-niv/engine.test.ts` (5 call sites)
 
-- [ ] **Step 1:** In `games/whack-a-niv/types.ts`, replace `SPAWN_P_PER_TICK = 0.04` with a ramped pair:
+- [ ] **Step 1:** In `games/whack-a-niv/types.ts`, replace `SPAWN_P_PER_TICK = 0.04` with:
 
 ```ts
 export const SPAWN_P_START = 0.012;
 export const SPAWN_P_END = 0.045;
-export const ROUND_MS = 30000;
+// Old constant retired; tests should use SPAWN_P_END directly if they need a max.
 ```
 
-(Remove the old `SPAWN_P_PER_TICK` constant if nothing else imports it; otherwise leave it as an alias `= SPAWN_P_END` for backwards compat in tests.)
+(Remove the `SPAWN_P_PER_TICK` export entirely — the engine and tests will be patched in this task.)
 
-- [ ] **Step 2:** In `games/whack-a-niv/engine.ts`, the `step` function reads spawn probability. Replace the constant lookup with a time-based ramp:
+- [ ] **Step 2:** In `games/whack-a-niv/engine.ts`, change the import line and the spawn-decision line:
 
 ```ts
-import { SPAWN_P_START, SPAWN_P_END, ROUND_MS } from "./types";
-// inside step(now, rng):
-const elapsed = state.startedAt ? now - state.startedAt : 0;
+// remove: import { ..., SPAWN_P_PER_TICK, ... } from "./types";
+// add:    import { ..., SPAWN_P_START, SPAWN_P_END, ROUND_MS, ... } from "./types";
+
+// inside step(state, now, rng, ...):
+const elapsed = state.startedAt ? Math.max(0, now - state.startedAt) : 0;
 const t = Math.min(1, elapsed / ROUND_MS);
 const p = SPAWN_P_START + (SPAWN_P_END - SPAWN_P_START) * t;
 if (rng() < p) {
-  // existing spawn logic
+  // existing spawn block
 }
 ```
 
-- [ ] **Step 3:** If `engine.test.ts` asserts `SPAWN_P_PER_TICK`, update tests to use the new range OR keep an alias and the old test passes:
+(Confirm `ROUND_MS` is already exported from `types.ts`; if not, add `export const ROUND_MS = 30000;` there.)
 
-```ts
-// types.ts
-export const SPAWN_P_PER_TICK = SPAWN_P_END; // legacy alias
+- [ ] **Step 3:** **Update test call sites.** `games/whack-a-niv/engine.test.ts` calls `step(s, ..., rng)` in multiple places. Plus Task 5.2 will add a 4th param. For now, just remove any direct reference to `SPAWN_P_PER_TICK` in the tests if present, and adapt assertions that depend on a constant 0.04 probability:
+
+```bash
+grep -n "SPAWN_P_PER_TICK" games/whack-a-niv/engine.test.ts
 ```
 
-(Choose the alias path — minimal churn.)
+If the grep returns hits, replace with `SPAWN_P_END`. If a test asserted "with rng()=0 a spawn happens" — that still holds (any value < `p` triggers a spawn, and `p >= SPAWN_P_START > 0`).
 
-- [ ] **Step 4:** Tests pass
+- [ ] **Step 4:** Run
 
 ```bash
 pnpm test games/whack-a-niv
 ```
 
-- [ ] **Step 5:** Don't commit yet.
+If green, hold; Task 5.2 reuses these files.
 
-### Task 5.2: Different Niv face per spawn
+### Task 5.2: `pickAsset` parameter for per-spawn rotation
 
 **Files:**
-- Modify: `app/whack-a-niv/page.tsx`
-- Modify: `games/whack-a-niv/Holes.tsx` (verify it reads `hole.asset.paths.avatar128`)
-- Use: `lib/niv/face-pool.ts` from Task 2.1
+- Modify: `games/whack-a-niv/engine.ts` (signature + spawn site)
+- Modify: `games/whack-a-niv/engine.test.ts` (every `step()` call)
+- Modify: `app/whack-a-niv/page.tsx` (pass `pickAsset`)
+- Modify: `games/whack-a-niv/Holes.tsx` (verify it uses `hole.asset.paths.avatar128`)
 
-The spec already had per-hole `asset` in state, but the current implementation likely picks one face at game-start and reuses it. Change so each spawn picks a fresh face.
-
-- [ ] **Step 1:** In `games/whack-a-niv/engine.ts`, in the `step` function where a new head is spawned: instead of cloning a single game-asset, accept a `pickAsset` argument:
+- [ ] **Step 1:** Change the `step` signature in `engine.ts`:
 
 ```ts
-// In the engine signature:
-export function step(state: WhackState, now: number, rng: () => number, pickAsset: () => NivAsset): WhackState;
+import type { NivAsset } from "@/lib/niv-types";
+// existing param list: (state, now, rng)
+// new:
+export function step(
+  state: WhackState,
+  now: number,
+  rng: () => number,
+  pickAsset: () => NivAsset
+): WhackState {
+  // ... existing despawn logic ...
+  // at the spawn site:
+  const newAsset = pickAsset();
+  // assign newAsset to the new hole's `asset` field
+}
 ```
 
-When spawning, set `hole.asset = pickAsset()`. Random thought-bubble selection unchanged.
+- [ ] **Step 2:** Patch every call site in `engine.test.ts`. Find them:
 
-- [ ] **Step 2:** Update tests — pass a stub `pickAsset` (e.g. `() => ({ slug: 'x', paths: { avatar64: '', avatar128: '', avatar256: '', portrait720: '' }, caption: '', tier: 'bronze', game: 'whack-a-niv', milestone: '' })`).
+```bash
+grep -n "step(" games/whack-a-niv/engine.test.ts
+```
 
-- [ ] **Step 3:** In `app/whack-a-niv/page.tsx`, replace the existing single-asset selection with a `pickAsset` passed to `step`:
+For each `step(s, now, rng)`, change to `step(s, now, rng, fakePick)` where:
+
+```ts
+const fakeAsset = {
+  slug: "test",
+  caption: "",
+  tier: "bronze" as const,
+  game: "whack-a-niv" as const,
+  milestone: "",
+  paths: { avatar64: "", avatar128: "", avatar256: "", portrait720: "" },
+};
+const fakePick = () => fakeAsset;
+```
+
+Add the `fakeAsset` + `fakePick` declarations once at the top of the test file or per-`describe` as needed.
+
+- [ ] **Step 3:** In `app/whack-a-niv/page.tsx`, import face-pool and pass it in:
 
 ```tsx
 import { pickFaceForGame } from "@/lib/niv/face-pool";
-// inside the component:
+// inside the component (top-level so it's stable):
 const pickAsset = useCallback(() => pickFaceForGame("whack-a-niv"), []);
-// in the loop / step call:
+// at the loop step call:
 nextState = step(state, now, Math.random, pickAsset);
 ```
 
-- [ ] **Step 4:** `Holes.tsx` likely already reads `hole.asset?.paths.avatar128`. Verify; if it falls back to a single static prop, remove the prop and rely on `hole.asset`.
+(If the loop currently picks one asset at game start, **remove that selection** — it's now per-spawn inside the engine.)
 
-- [ ] **Step 5:** Smoke test on `/whack-a-niv` — different Niv faces appear in different holes, no two consecutive spawns share the same face often.
+- [ ] **Step 4:** In `games/whack-a-niv/Holes.tsx`, verify each rendered head uses the per-hole `hole.asset?.paths.avatar128` (not a single image prop). If it currently takes an `asset` or `face` prop from the page, remove that prop and read from `hole`.
 
-- [ ] **Step 6:** Commit
+- [ ] **Step 5:** Smoke test on `/whack-a-niv` — different Niv faces appear in different holes through the round; few back-to-back duplicates.
+
+- [ ] **Step 6:** Type + tests
+
+```bash
+pnpm typecheck && pnpm test games/whack-a-niv
+```
+
+- [ ] **Step 7:** Commit
 
 ```bash
 git add games/whack-a-niv app/whack-a-niv
@@ -664,49 +576,55 @@ git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "
 
 ## Phase 6 — Niv-Tac-Toe: rotating Niv face per game
 
-### Task 6.1: Per-game Niv face on X cells
+### Task 6.1: Per-game face
 
 **Files:**
 - Modify: `games/niv-tac-toe/Board.tsx`
 - Modify: `app/niv-tac-toe/page.tsx`
 
-Currently the board shows one fixed Niv head for X. Change so a fresh face is picked each new game (start + after restart).
-
-- [ ] **Step 1:** Update `Board.tsx` to accept the avatar URL as a prop:
+- [ ] **Step 1:** Read `games/niv-tac-toe/Board.tsx` to find where 'X' cells render (likely an `<Image>` or static path). Add a `faceUrl: string` prop:
 
 ```tsx
-// existing signature:
-// export function Board({ board, ... }: BoardProps) { ... }
-
-// change to:
-export function Board({ board, faceUrl, ...rest }: BoardProps & { faceUrl: string }) {
-  // Use faceUrl in the cell render where 'X' was previously rendered with a static image.
-  // Example replacement inside the cell render:
+type BoardProps = {
+  // ... existing fields ...
+  faceUrl: string;
+};
+export function Board({ /* existing */, faceUrl, /* ... */ }: BoardProps) {
+  // wherever 'X' was rendered with a static avatar, use faceUrl:
   // {cell === 'X' && <Image src={faceUrl} alt="X" width={64} height={64} className="image-pixelated" />}
 }
 ```
 
-- [ ] **Step 2:** Update `app/niv-tac-toe/page.tsx`:
+If the board file currently has a hardcoded `pickNivAvatar()` helper or fixed path, remove it and accept the prop instead.
+
+- [ ] **Step 2:** In `app/niv-tac-toe/page.tsx`:
 
 ```tsx
 import { pickFaceForGame } from "@/lib/niv/face-pool";
-// inside the component:
-const [faceUrl, setFaceUrl] = useState<string>(() => pickFaceForGame("niv-tac-toe").paths.avatar128);
+// inside component:
+const [faceUrl, setFaceUrl] = useState<string>(
+  () => pickFaceForGame("niv-tac-toe").paths.avatar128
+);
 
-const onRestart = useCallback(() => {
+const newFace = useCallback(() => {
   setFaceUrl(pickFaceForGame("niv-tac-toe").paths.avatar128);
-  // ...existing restart logic
 }, []);
 
-// pass to Board:
-<Board faceUrl={faceUrl} ... />
+// call newFace() inside:
+//  - the existing onRestart handler
+//  - the difficulty toggle handler
+// pass to Board: <Board faceUrl={faceUrl} ... />
 ```
 
-Also re-pick on initial mount (the `useState` initializer above already does this) and on difficulty toggle (treat as a new game — call the same setFaceUrl in the difficulty-change handler).
+- [ ] **Step 3:** Smoke test on `/niv-tac-toe`: fresh Niv face on first load; different face after restart; different face after difficulty change.
 
-- [ ] **Step 3:** Smoke test on `/niv-tac-toe`: fresh face on first load; different face after restart.
+- [ ] **Step 4:** Type + tests
 
-- [ ] **Step 4:** Commit
+```bash
+pnpm typecheck && pnpm test games/niv-tac-toe
+```
+
+- [ ] **Step 5:** Commit
 
 ```bash
 git add games/niv-tac-toe app/niv-tac-toe
@@ -715,176 +633,236 @@ git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "
 
 ---
 
-## Phase 7 — Brick-Niv: wider bricks, bigger labels, side portrait
+## Phase 7 — Brick-Niv: fewer wider bricks, bigger labels, paddle face rotation
 
-### Task 7.1: Reshape grid + bigger labels + side panel
+### Task 7.1: Reshape grid + bigger labels + correct pan math
 
 **Files:**
-- Modify: `games/brick-niv/engine.ts` (column count)
-- Modify: `games/brick-niv/Renderer.tsx` (font size + side panel)
+- Modify: `games/brick-niv/engine.ts`
+- Modify: `games/brick-niv/Renderer.tsx`
+- Modify: `app/brick-niv/page.tsx`
 
-- [ ] **Step 1:** Find the bricks-init helper in `engine.ts` (probably named `seedBricks`, `initBricks`, or in `start(level)`). Reduce columns from 8 to 5:
+- [ ] **Step 1:** In `games/brick-niv/engine.ts`, find the brick-init block. Change the column count:
 
 ```ts
-// inside the brick init:
-const COLS = 5;
-const ROWS = 5;
-// brick width derived from playArea.width / COLS — propagate this through the layout.
+const BRICK_COLS = 5;
+const BRICK_ROWS = 5;
 ```
 
-If brick width is computed from world width (`worldW / COLS`), reducing COLS automatically widens bricks.
+(If the existing constants are named differently — `cols`, `numCols`, etc. — find them with grep and adjust.)
 
-- [ ] **Step 2:** In `Renderer.tsx`, find the brick label drawing call. Likely:
-
-```ts
-ctx.font = "6px 'Press Start 2P'";
-ctx.fillText(brick.label, ...);
-```
-
-Replace with a font size proportional to brick width. Compute once per render:
+- [ ] **Step 2:** In `games/brick-niv/Renderer.tsx`, find the brick label `ctx.fillText` call. Replace its font with one proportional to brick width:
 
 ```ts
-const labelFont = Math.max(10, Math.floor(brick.w * 0.18));
-ctx.font = `${labelFont}px 'Press Start 2P'`;
+const labelFont = Math.max(11, Math.floor(brick.w * 0.18));
+ctx.font = `${labelFont}px "Press Start 2P", monospace`;
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
+ctx.fillStyle = "#fff";
 ctx.fillText(brick.label, brick.x + brick.w / 2, brick.y + brick.h / 2);
 ```
 
-- [ ] **Step 3:** Add a side Niv portrait. The play area is currently full-width canvas. Easiest path: render a `<div>` flexbox in `app/brick-niv/page.tsx` that wraps Renderer + a sidebar with a single Niv image. On portrait viewport, place the image *above* the canvas (because horizontal space is tight); on wider viewports, place it beside.
+(Fewer cols → bigger `brick.w` → bigger font automatically. Keep the existing background fill for the brick itself unchanged.)
 
-Update `app/brick-niv/page.tsx`:
+- [ ] **Step 3:** Replace the hardcoded paddle face. Find `Renderer.tsx:46`-ish, the `/niv/cb2aea18265e/avatar-128.webp` literal. Hoist face selection up to the page:
 
-```tsx
-import Image from "next/image";
-import { pickFaceForGame } from "@/lib/niv/face-pool";
-// inside component:
-const [face] = useState(() => pickFaceForGame("brick-niv"));
+  - Remove the hardcoded `IMAGE_SRC` from `Renderer.tsx`.
+  - Add a `faceUrl: string` prop.
+  - In `app/brick-niv/page.tsx`:
 
-return (
-  <GameFrame title="BRICK-NIV" ...>
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 px-2">
-      <div className="flex flex-col items-center gap-1 sm:order-2">
-        <Image
-          src={face.paths.avatar256}
-          alt=""
-          width={120}
-          height={120}
-          className="image-pixelated border-4 border-arcade-yellow"
-          priority
-        />
-        <p className="text-[7px] text-arcade-yellow text-center max-w-[140px] leading-snug">
-          NIV WATCHES
-        </p>
-      </div>
-      <Renderer ... className="sm:order-1" />
-    </div>
-  </GameFrame>
-);
-```
+    ```tsx
+    import { pickFaceForGame } from "@/lib/niv/face-pool";
+    const [faceUrl, setFaceUrl] = useState(
+      () => pickFaceForGame("brick-niv").paths.avatar128
+    );
+    // pass to <Renderer faceUrl={faceUrl} />
+    // re-pick inside the existing onNewGame / restart handler:
+    setFaceUrl(pickFaceForGame("brick-niv").paths.avatar128);
+    ```
 
-(The order classes flip portrait→landscape: image above on mobile, image to right on tablet+.)
+- [ ] **Step 4:** **Fix `onPan` math** in `app/brick-niv/page.tsx`. The current handler likely converts `clientX` against the parent-frame's bounding rect, not the canvas's. Locate the `onPan` callback (passed to `<TouchPad>`). It should:
 
-- [ ] **Step 4:** Tests + smoke
+  ```tsx
+  const onPan = useCallback((x: number, _y: number, _rect: DOMRect) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const r = canvas.getBoundingClientRect();
+    const localX = ((x - r.left) / r.width) * FIELD_W;
+    setPaddleX(Math.max(0, Math.min(FIELD_W, localX)));
+  }, []);
+  ```
+
+  Where `canvasRef` is forwarded from `<Renderer ref={canvasRef} />` (use `forwardRef` if needed) or shared via a context — whichever is least invasive. If forward-ref is heavy, use a shared ref via prop:
+
+  ```tsx
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  <Renderer canvasRef={canvasRef} faceUrl={faceUrl} ... />
+  ```
+
+  And in Renderer:
+
+  ```tsx
+  export function Renderer({ canvasRef, faceUrl, ... }: { canvasRef: RefObject<HTMLCanvasElement | null>; faceUrl: string; ... }) {
+    // use canvasRef in place of any internal ref
+  }
+  ```
+
+  (Adjust to whatever pattern Renderer already uses — minimal-churn refactor.)
+
+- [ ] **Step 5:** Smoke test on `/brick-niv` (390×844): brick labels readable (≥11px), bricks wider, paddle moves correctly when dragging anywhere across the canvas, paddle face is a Niv face.
+
+- [ ] **Step 6:** Type + tests
 
 ```bash
 pnpm typecheck && pnpm test games/brick-niv
-pnpm dev
 ```
-On `/brick-niv`: brick labels readable (≥10px), bricks visibly wider, Niv portrait visible above the play area on mobile.
 
-- [ ] **Step 5:** Commit
+- [ ] **Step 7:** Commit
 
 ```bash
 git add games/brick-niv app/brick-niv
-git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(brick-niv): wider bricks, bigger labels, side niv portrait"
+git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(brick-niv): 5x5 brick grid, bigger labels, rotating paddle face, canvas-relative pan"
 ```
 
 ---
 
-## Phase 8 — Verify everything together
+## Phase 7.5 — Lobby & trophy room readability
 
-### Task 8.1: Full verification
+### Task 7.5.1: Bigger lobby + trophies + frame headers
 
-**Files:** none
+**Files:**
+- Modify: `app/page.tsx`
+- Modify: `app/trophies/page.tsx`
+- Modify: `components/arcade/GameFrame.tsx`
 
-- [ ] **Step 1:** Run the full test + type + build pipeline
+- [ ] **Step 1:** In `app/page.tsx`, find the menu tile `<Link>` and bump:
+  - `text-[11px]` → `text-sm` (14px) on the title
+  - `text-[9px]` → `text-xs` (12px) on the tagline
+  - `p-3` → `p-4`
+  - Mascot image: `width={96} height={96}` → `width={128} height={128}`
+  - Title `text-2xl sm:text-3xl` → `text-3xl sm:text-4xl`
+  - "PRESS START" font from `text-[10px]` → `text-xs`
+
+  Concretely (excerpt):
+
+  ```tsx
+  <Link
+    href={g.href}
+    className="block border-2 border-arcade-fg/40 hover:border-arcade-yellow active:border-arcade-yellow active:bg-arcade-yellow/10 p-4 transition-colors h-full"
+  >
+    <div className={`text-sm ${g.accent}`}>{g.title}</div>
+    <div className="text-xs text-arcade-fg/70 mt-1 leading-snug">{g.tagline}</div>
+  </Link>
+  ```
+
+- [ ] **Step 2:** In `app/trophies/page.tsx`, bump:
+  - Card grid from `grid-cols-3 sm:grid-cols-4` → `grid-cols-2 sm:grid-cols-3` (fewer per row → each card bigger)
+  - Card image `width={72} height={72}` → `width={104} height={104}`
+  - Card tier label `text-[7px]` → `text-[9px]`
+  - Header h1 `text-[12px]` → `text-sm`
+  - Filter chip `text-[8px]` → `text-[10px]`
+
+- [ ] **Step 3:** In `components/arcade/GameFrame.tsx`, bump:
+  - HOME link `text-[9px]` → `text-[11px]`
+  - Title h1 `text-[11px]` → `text-sm` (14px)
+  - Score block `text-[9px]` → `text-[11px]`
+
+- [ ] **Step 4:** Smoke test
+
+```bash
+pnpm dev
+```
+Visit `/`, `/trophies`, and any game route at 390×844 — text should be visibly larger, menu tiles taller.
+
+- [ ] **Step 5:** Type + build
+
+```bash
+pnpm typecheck && pnpm build
+```
+
+- [ ] **Step 6:** Commit
+
+```bash
+git add app/page.tsx app/trophies/page.tsx components/arcade/GameFrame.tsx
+git -c user.name='Orel Kozachi' -c user.email='orelgalaxy@gmail.com' commit -m "feat(ui): bigger lobby tiles, trophy cards, and game frame headers"
+```
+
+---
+
+## Phase 8 — Verify
+
+### Task 8.1: Full pipeline
+
+- [ ] **Step 1:**
 
 ```bash
 pnpm typecheck && pnpm test && pnpm build
 ```
 
-Expected: all green. If a game fails build because a parallel subagent introduced a regression, read the error; fix in the smallest possible patch; commit a `fix:` commit.
+All green. If a game fails build because a parallel subagent left a regression, fix in the smallest possible patch and commit `fix:`.
 
-- [ ] **Step 2:** Smoke test all 6 game routes locally:
+- [ ] **Step 2:** Smoke test all 6 games + lobby + trophies + settings locally
 
 ```bash
 pnpm dev
 ```
 
-For each of `/snake-niv`, `/pac-niv`, `/niv-memory`, `/niv-tac-toe`, `/brick-niv`, `/whack-a-niv`:
-- Loads without console errors
-- Niv face visible at a reasonable size
-- Game playable to a death/win/round-end
-- High-score saves on reload
-
-- [ ] **Step 3:** If any blocker found, fix inline and commit before deploying.
+For each route: loads, no console errors, mobile layout fills viewport, Niv visible.
 
 ---
 
 ## Phase 9 — Deploy
 
-### Task 9.1: Push + deploy
+### Task 9.1: Push + redeploy + smoke
 
-- [ ] **Step 1:** Push to GitHub
+- [ ] **Step 1:**
 
 ```bash
 git push origin main
 ```
 
-- [ ] **Step 2:** Deploy to Vercel production
+- [ ] **Step 2:**
 
 ```bash
 vercel --prod
 ```
 
-- [ ] **Step 3:** Smoke check the production URL
+- [ ] **Step 3:** Curl-check all routes
 
 ```bash
-for p in / /snake-niv /pac-niv /niv-memory /niv-tac-toe /brick-niv /whack-a-niv; do
+for p in / /snake-niv /pac-niv /niv-memory /niv-tac-toe /brick-niv /whack-a-niv /trophies /settings; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "https://niv-mini-games.vercel.app$p")
   echo "$code  $p"
 done
 ```
 
-All should be 200. If any is not, investigate before reporting done.
-
-- [ ] **Step 4:** Report the URL.
+All 200. Report URL.
 
 ---
 
-## Self-Review
+## Self-Review (v2)
 
-**1. Spec coverage:** Each user complaint (memory bug, pac-niv scale, snake-niv scale + controls, whack rotation + speed, tac-toe rotation, brick width + labels) has a dedicated task. ✓
+**1. Spec coverage:** Each user complaint is addressed:
+- "screen is too big" / "things small generally" → Phase 7.5 (lobby + trophies + frame)
+- "Pac-Niv too small" → Phase 3 (CSS-scale + 1.4× sprite)
+- "Snake controls hard" → Phase 4.2 (DPad)
+- "Snake too small" → Phase 4 (15×15 + CSS scale)
+- "Whack: rotating pictures + slower start" → Phase 5
+- "Memory stuck after first match" → Phase 1
+- "Tic-Tac-Toe rotating pictures" → Phase 6
+- "Brick board too thin / labels small" → Phase 7
 
-**2. Placeholder scan:** No "TBD"/"add appropriate ..."/"similar to Task N" patterns. Every code-changing step has a code block.
+**2. Reviewer blockers:** All addressed (see "What review found" table at top).
 
-**3. Type consistency:**
-- `pickFace` / `pickFaces` / `pickFaceForGame` — used consistently across Tasks 5, 6 (and available to 7 via `face-pool.ts`).
-- `SPAWN_P_START` / `SPAWN_P_END` / `ROUND_MS` — defined once in Task 5.1, referenced in 5.1 only. Old `SPAWN_P_PER_TICK` aliased for legacy callers.
-- `MAZE_W = 17`, `MAZE_H = 19` — defined Task 3.1, referenced Task 3.2.
-- `GRID = 12` — defined Task 4.1, used in Task 4.1 only.
-- `DPad` — defined Task 4.2, used Task 4.2 only.
-- Renderer `cell` state — defined and consumed within the same task per game.
+**3. No placeholders:** Every code-changing step has the actual code. No TBDs.
 
-**4. Don't-break checklist:**
-- Manifest types in `lib/niv-types.ts` — untouched. ✓
-- Store schema — untouched. ✓
-- Achievement engine + UnlockToast + GameFrame — untouched. ✓
-- All milestones still fire (no engine logic removed, only sizing/inputs/spawn-pace changed). ✓
-- Existing tests should still pass after constant updates; tests adjusted explicitly only when their assertions reference removed constants.
+**4. Type/name consistency:** `pickFaceForGame`, `SPAWN_P_START`/`SPAWN_P_END`/`ROUND_MS`, `GRID_SIZE = 15`, `BRICK_COLS = 5`, `DPad`, `faceUrl` — defined once, referenced same-name everywhere.
 
-**5. Risks:**
-- Pac-Niv maze rewrite is the highest-risk task — ghost AI behavior + pellet count assertions could regress. Mitigation: verify in browser that ghosts move + collide reasonably; if a test asserts a specific pellet count, update it to count `.` chars in the new layout.
-- Snake D-pad: pointerdown handler on absolute-positioned buttons inside a `touch-action: none` parent. Mitigation: each button has its own `touch-none` and `e.preventDefault()`.
-- Brick side panel: image above canvas on portrait could push canvas off-screen on small phones. Mitigation: image is 120px square — fits 390px viewport with room.
+**5. Don't-break inventory:** Manifest types untouched. Store untouched. Achievements untouched. Veo + nanobanana outputs untouched. Engine signatures only changed in Whack (with all callers patched).
+
+**6. Risks:**
+- CSS `aspectRatio` browser support: Safari 15+, fine for our target.
+- DPad `onPointerDown` on small buttons: 64px square is well above the 44pt iOS minimum.
+- Whack `pickAsset` could pick the same face two spawns in a row by chance (~1% with 100 assets) — acceptable.
+- Brick `canvasRef` plumbing: if `Renderer` is currently using its own internal ref, switching to a passed-in ref needs care — use prop pattern, not `forwardRef`, to keep churn low.
+- Snake `GRID_SIZE` change might re-route a deterministic-RNG test if any hardcoded a 20-grid spawn position. Plan explicitly addresses this in Task 4.1 Step 3.
