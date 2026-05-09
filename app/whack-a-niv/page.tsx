@@ -11,30 +11,18 @@ import {
   whack,
 } from "@/games/whack-a-niv/engine";
 import { ROUND_MS, type WhackState } from "@/games/whack-a-niv/types";
-import { NIV_MANIFEST } from "@/lib/niv-manifest";
+import { pickFaceForGame } from "@/lib/niv/face-pool";
 import { useNivStore } from "@/lib/store/use-niv-store";
 import { useAchievements } from "@/lib/achievements/use-achievements";
 
 const ROUNDS_KEY = "whack-a-niv:rounds" as const;
-
-function pickHeadSrc(): string {
-  const own = NIV_MANIFEST.assets.filter((a) => a.game === "whack-a-niv");
-  const pool = own.length ? own : NIV_MANIFEST.assets;
-  if (pool.length === 0) return "/niv/placeholder.webp";
-  const a = pool[Math.floor(Math.random() * pool.length)];
-  return a.paths.avatar256 ?? a.paths.avatar128 ?? a.paths.avatar64;
-}
 
 export default function WhackANivPage() {
   const [state, setState] = useState<WhackState>(() => createInitialState(0));
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const [headSrc, setHeadSrc] = useState<string>("/niv/placeholder.webp");
-  // Locked-in head per game start so it doesn't churn each render.
-  useEffect(() => {
-    setHeadSrc(pickHeadSrc());
-  }, []);
+  const pickAsset = useCallback(() => pickFaceForGame("whack-a-niv"), []);
 
   const [now, setNow] = useState<number>(() =>
     typeof performance !== "undefined" ? performance.now() : 0
@@ -75,7 +63,6 @@ export default function WhackANivPage() {
     setState(startGame(t));
     setNow(t);
     setShake(false);
-    setHeadSrc(pickHeadSrc());
   }, []);
 
   // -------- Game loop (rAF) --------
@@ -87,14 +74,14 @@ export default function WhackANivPage() {
       setNow(t);
       const cur = stateRef.current;
       if (cur.status === "playing") {
-        const next = step(cur, t, defaultRng);
+        const next = step(cur, t, defaultRng, pickAsset);
         if (next !== cur) setState(next);
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [pickAsset]);
 
   // -------- End-of-game milestones --------
   const overFiredRef = useRef(false);
@@ -283,7 +270,6 @@ export default function WhackANivPage() {
 
             <Holes
               holes={state.holes}
-              headSrc={headSrc}
               flashing={flashing}
               thumping={thumping}
               onWhack={handleWhack}

@@ -1,10 +1,12 @@
+import type { NivAsset } from "@/lib/niv-types";
 import {
   HEAD_TTL_MAX,
   HEAD_TTL_MIN,
   HOLE_COUNT,
   PRECRIME_WINDOW_MS,
   ROUND_MS,
-  SPAWN_P_PER_TICK,
+  SPAWN_P_END,
+  SPAWN_P_START,
   THOUGHT_BUBBLES,
   type Hole,
   type WhackResult,
@@ -48,7 +50,12 @@ export function startGame(now: number): WhackState {
 }
 
 /** Pure tick: despawns expired heads and (with probability) spawns one new head. */
-export function step(state: WhackState, now: number, rng: RNG): WhackState {
+export function step(
+  state: WhackState,
+  now: number,
+  rng: RNG,
+  pickAsset: () => NivAsset
+): WhackState {
   if (state.status !== "playing") return state;
 
   // End of round
@@ -65,8 +72,13 @@ export function step(state: WhackState, now: number, rng: RNG): WhackState {
     return h;
   });
 
+  // Ramped spawn probability: starts low, ends high over ROUND_MS.
+  const elapsed = state.startedAt ? Math.max(0, now - state.startedAt) : 0;
+  const t = Math.min(1, elapsed / ROUND_MS);
+  const p = SPAWN_P_START + (SPAWN_P_END - SPAWN_P_START) * t;
+
   // Try to spawn at most one head per tick.
-  if (rng() < SPAWN_P_PER_TICK) {
+  if (rng() < p) {
     const empties: number[] = [];
     for (const h of holes) if (!h.occupied) empties.push(h.id);
     if (empties.length > 0) {
@@ -75,6 +87,7 @@ export function step(state: WhackState, now: number, rng: RNG): WhackState {
       const ttl =
         HEAD_TTL_MIN + Math.floor(rng() * (HEAD_TTL_MAX - HEAD_TTL_MIN + 1));
       const bubbleIdx = Math.floor(rng() * THOUGHT_BUBBLES.length);
+      const newAsset = pickAsset();
       holes = holes.map((h) =>
         h.id === target
           ? {
@@ -84,6 +97,7 @@ export function step(state: WhackState, now: number, rng: RNG): WhackState {
               expiresAt: now + ttl,
               thoughtBubble:
                 THOUGHT_BUBBLES[Math.min(bubbleIdx, THOUGHT_BUBBLES.length - 1)],
+              asset: newAsset,
             }
           : h
       );

@@ -1,6 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { createInitialState, startGame, step, whack } from "./engine";
 import { HOLE_COUNT, ROUND_MS, type WhackState } from "./types";
+import type { NivAsset } from "@/lib/niv-types";
+
+const fakeAsset: NivAsset = {
+  slug: "test",
+  caption: "",
+  tier: "bronze" as const,
+  game: "whack-a-niv" as const,
+  milestone: "",
+  paths: { avatar64: "", avatar128: "", avatar256: "", portrait720: "" },
+};
+const fakePick = () => fakeAsset;
 
 function rngSeq(values: number[]): () => number {
   let i = 0;
@@ -21,17 +32,17 @@ describe("whack-a-niv engine", () => {
     // second call picks hole 0, third call picks ttl, fourth picks bubble.
     let s = withPlaying(0);
     const rng = rngSeq([0.001, 0, 0, 0]);
-    s = step(s, 16, rng);
+    s = step(s, 16, rng, fakePick);
     const occupied = s.holes.filter((h) => h.occupied);
     expect(occupied.length).toBe(1);
     const head = occupied[0];
     expect(head.expiresAt).toBeGreaterThan(16);
     expect(head.thoughtBubble).toBeTruthy();
 
-    // Now advance past the expiry; rng forces no new spawn (>0.04).
+    // Now advance past the expiry; rng forces no new spawn (>SPAWN_P_END).
     const expireTime = head.expiresAt! + 1;
     const rng2 = rngSeq([0.99]);
-    s = step(s, expireTime, rng2);
+    s = step(s, expireTime, rng2, fakePick);
     expect(s.holes.every((h) => !h.occupied)).toBe(true);
   });
 
@@ -114,16 +125,16 @@ describe("whack-a-niv engine", () => {
 
     // Just before deadline -> still playing.
     const rng = rngSeq([0.99]);
-    s = step(s, ROUND_MS - 1, rng);
+    s = step(s, ROUND_MS - 1, rng, fakePick);
     expect(s.status).toBe("playing");
 
     // At deadline -> over.
-    s = step(s, ROUND_MS, rng);
+    s = step(s, ROUND_MS, rng, fakePick);
     expect(s.status).toBe("over");
 
     // Subsequent steps are no-ops.
     const before = s;
-    s = step(s, ROUND_MS + 5_000, rng);
+    s = step(s, ROUND_MS + 5_000, rng, fakePick);
     expect(s).toEqual(before);
   });
 

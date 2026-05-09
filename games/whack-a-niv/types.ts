@@ -1,3 +1,5 @@
+import type { NivAsset } from "@/lib/niv-types";
+
 export const HOLE_COUNT = 9; // 3x3
 export const ROUND_MS = 30_000;
 
@@ -5,8 +7,9 @@ export const ROUND_MS = 30_000;
 export const HEAD_TTL_MIN = 800;
 export const HEAD_TTL_MAX = 1100;
 
-/** Probability per tick (assumed ~60Hz) of attempting a spawn in an empty hole. */
-export const SPAWN_P_PER_TICK = 0.04;
+/** Ramped spawn probability per tick over the course of a round. */
+export const SPAWN_P_START = 0.012;
+export const SPAWN_P_END = 0.045;
 
 /** Window in ms after spawn where a hit counts as "pre-crime". */
 export const PRECRIME_WINDOW_MS = 100;
@@ -40,6 +43,8 @@ export interface Hole {
   spawnedAt?: number;
   /** Random thought-bubble text to render above the head. */
   thoughtBubble?: string;
+  /** Per-spawn rotating Niv asset (face). Set when the hole is occupied. */
+  asset?: NivAsset;
 }
 
 export interface WhackState {

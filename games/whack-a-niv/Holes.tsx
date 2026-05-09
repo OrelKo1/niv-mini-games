@@ -5,8 +5,6 @@ import type { Hole } from "./types";
 
 export interface HolesProps {
   holes: Hole[];
-  /** Image src for the Niv head sprite. */
-  headSrc: string;
   /** Hole ids that should flash red (recent miss-tap). */
   flashing: Set<number>;
   /** Hole ids that should flash green (recent hit). */
@@ -15,9 +13,10 @@ export interface HolesProps {
   disabled?: boolean;
 }
 
+const PLACEHOLDER_HEAD = "/niv/placeholder.webp";
+
 export function Holes({
   holes,
-  headSrc,
   flashing,
   thumping,
   onWhack,
@@ -57,7 +56,11 @@ export function Holes({
               <div className="absolute inset-0 flex items-end justify-center pb-1 pointer-events-none">
                 <div className="relative w-[78%] aspect-square animate-whack-pop">
                   <Image
-                    src={headSrc}
+                    src={
+                      h.asset?.paths.avatar128 ??
+                      h.asset?.paths.avatar64 ??
+                      PLACEHOLDER_HEAD
+                    }
                     alt=""
                     fill
                     sizes="80px"
