@@ -119,4 +119,22 @@ export const CAPTIONS: CaptionEntry[] = [
   { caption: "Played 10 rounds. Niv has filed restraining order.", tier: "silver", game: "whack-a-niv", milestone: "whack:rounds:10" },
   { caption: "Played 50 rounds. Niv has retreated to the desert.", tier: "gold", game: "whack-a-niv", milestone: "whack:rounds:50" },
   { caption: "Final hit was a clean slap on Niv's bald spot.", tier: "platinum", game: "whack-a-niv", milestone: "whack:finalhit" },
+
+  // Run-Niv (16)
+  { caption: "First run. Niv took the first step. Niv tripped on it.", tier: "bronze", game: "run-niv", milestone: "run:firstrun" },
+  { caption: "Niv tripped 5 times. He's still trying. Bless him.", tier: "bronze", game: "run-niv", milestone: "run:trip:5" },
+  { caption: "Niv tripped 10 times. The pavement is his arch-nemesis.", tier: "silver", game: "run-niv", milestone: "run:trip:10" },
+  { caption: "Niv tripped 20 times. This is just performance art now.", tier: "gold", game: "run-niv", milestone: "run:trip:20" },
+  { caption: "Tripped on absolutely nothing. Pure dedication.", tier: "bronze", game: "run-niv", milestone: "run:trip:phantom" },
+  { caption: "Beat Niv. He sends his condolences via faceplant.", tier: "silver", game: "run-niv", milestone: "run:beat" },
+  { caption: "Beat Niv by 500m. He's still on the start line.", tier: "gold", game: "run-niv", milestone: "run:beat:500" },
+  { caption: "Beat Niv by 1000m. Niv has officially given up.", tier: "platinum", game: "run-niv", milestone: "run:beat:1000" },
+  { caption: "Lost to Niv. How. He literally falls every 4 seconds.", tier: "bronze", game: "run-niv", milestone: "run:lose" },
+  { caption: "Distance 500m. Niv is somewhere behind, philosophically.", tier: "silver", game: "run-niv", milestone: "run:dist:500" },
+  { caption: "Distance 1000m. You are running. Niv is being.", tier: "gold", game: "run-niv", milestone: "run:dist:1000" },
+  { caption: "Distance 1500m. The marathon of disrespect.", tier: "platinum", game: "run-niv", milestone: "run:dist:1500" },
+  { caption: "Flawless run — no stumbles. Niv is jealous and prone.", tier: "gold", game: "run-niv", milestone: "run:flawless" },
+  { caption: "Headbutted the very first obstacle. Niv approves.", tier: "bronze", game: "run-niv", milestone: "run:headbutt" },
+  { caption: "Niv hit 3 obstacles in a row. The hat trick of incompetence.", tier: "silver", game: "run-niv", milestone: "run:nivchain:3" },
+  { caption: "Won and Niv was airborne when the timer ended. Iconic.", tier: "platinum", game: "run-niv", milestone: "run:airborn" },
 ];

@@ -2,7 +2,7 @@
 import type { NivManifest } from "./niv-types";
 export const NIV_MANIFEST: NivManifest = {
   "version": 1,
-  "generatedAt": "2026-05-09T19:06:23.239Z",
+  "generatedAt": "2026-05-09T22:19:41.534Z",
   "assets": [
     {
       "slug": "cb2aea18265e",
@@ -1362,6 +1362,214 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar128": "/niv/71a917934075/avatar-128.webp",
         "avatar256": "/niv/71a917934075/avatar-256.webp",
         "portrait720": "/niv/71a917934075/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "614506f70b01",
+      "caption": "First run. Niv took the first step. Niv tripped on it.",
+      "tier": "bronze",
+      "game": "run-niv",
+      "milestone": "run:firstrun",
+      "paths": {
+        "avatar64": "/niv/614506f70b01/avatar-64.webp",
+        "avatar128": "/niv/614506f70b01/avatar-128.webp",
+        "avatar256": "/niv/614506f70b01/avatar-256.webp",
+        "portrait720": "/niv/614506f70b01/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "95506db0c9d4",
+      "caption": "Niv tripped 5 times. He's still trying. Bless him.",
+      "tier": "bronze",
+      "game": "run-niv",
+      "milestone": "run:trip:5",
+      "paths": {
+        "avatar64": "/niv/95506db0c9d4/avatar-64.webp",
+        "avatar128": "/niv/95506db0c9d4/avatar-128.webp",
+        "avatar256": "/niv/95506db0c9d4/avatar-256.webp",
+        "portrait720": "/niv/95506db0c9d4/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "770b816dc075",
+      "caption": "Niv tripped 10 times. The pavement is his arch-nemesis.",
+      "tier": "silver",
+      "game": "run-niv",
+      "milestone": "run:trip:10",
+      "paths": {
+        "avatar64": "/niv/770b816dc075/avatar-64.webp",
+        "avatar128": "/niv/770b816dc075/avatar-128.webp",
+        "avatar256": "/niv/770b816dc075/avatar-256.webp",
+        "portrait720": "/niv/770b816dc075/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "3bddcaa28d9d",
+      "caption": "Niv tripped 20 times. This is just performance art now.",
+      "tier": "gold",
+      "game": "run-niv",
+      "milestone": "run:trip:20",
+      "paths": {
+        "avatar64": "/niv/3bddcaa28d9d/avatar-64.webp",
+        "avatar128": "/niv/3bddcaa28d9d/avatar-128.webp",
+        "avatar256": "/niv/3bddcaa28d9d/avatar-256.webp",
+        "portrait720": "/niv/3bddcaa28d9d/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "f43370d0869f",
+      "caption": "Tripped on absolutely nothing. Pure dedication.",
+      "tier": "bronze",
+      "game": "run-niv",
+      "milestone": "run:trip:phantom",
+      "paths": {
+        "avatar64": "/niv/f43370d0869f/avatar-64.webp",
+        "avatar128": "/niv/f43370d0869f/avatar-128.webp",
+        "avatar256": "/niv/f43370d0869f/avatar-256.webp",
+        "portrait720": "/niv/f43370d0869f/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "bbe3501d1c1b",
+      "caption": "Beat Niv. He sends his condolences via faceplant.",
+      "tier": "silver",
+      "game": "run-niv",
+      "milestone": "run:beat",
+      "paths": {
+        "avatar64": "/niv/bbe3501d1c1b/avatar-64.webp",
+        "avatar128": "/niv/bbe3501d1c1b/avatar-128.webp",
+        "avatar256": "/niv/bbe3501d1c1b/avatar-256.webp",
+        "portrait720": "/niv/bbe3501d1c1b/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "b676a767be5f",
+      "caption": "Beat Niv by 500m. He's still on the start line.",
+      "tier": "gold",
+      "game": "run-niv",
+      "milestone": "run:beat:500",
+      "paths": {
+        "avatar64": "/niv/b676a767be5f/avatar-64.webp",
+        "avatar128": "/niv/b676a767be5f/avatar-128.webp",
+        "avatar256": "/niv/b676a767be5f/avatar-256.webp",
+        "portrait720": "/niv/b676a767be5f/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "a2e63828fe4c",
+      "caption": "Beat Niv by 1000m. Niv has officially given up.",
+      "tier": "platinum",
+      "game": "run-niv",
+      "milestone": "run:beat:1000",
+      "paths": {
+        "avatar64": "/niv/a2e63828fe4c/avatar-64.webp",
+        "avatar128": "/niv/a2e63828fe4c/avatar-128.webp",
+        "avatar256": "/niv/a2e63828fe4c/avatar-256.webp",
+        "portrait720": "/niv/a2e63828fe4c/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "41defa83122b",
+      "caption": "Lost to Niv. How. He literally falls every 4 seconds.",
+      "tier": "bronze",
+      "game": "run-niv",
+      "milestone": "run:lose",
+      "paths": {
+        "avatar64": "/niv/41defa83122b/avatar-64.webp",
+        "avatar128": "/niv/41defa83122b/avatar-128.webp",
+        "avatar256": "/niv/41defa83122b/avatar-256.webp",
+        "portrait720": "/niv/41defa83122b/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "bfd80b4501b4",
+      "caption": "Distance 500m. Niv is somewhere behind, philosophically.",
+      "tier": "silver",
+      "game": "run-niv",
+      "milestone": "run:dist:500",
+      "paths": {
+        "avatar64": "/niv/bfd80b4501b4/avatar-64.webp",
+        "avatar128": "/niv/bfd80b4501b4/avatar-128.webp",
+        "avatar256": "/niv/bfd80b4501b4/avatar-256.webp",
+        "portrait720": "/niv/bfd80b4501b4/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "6198ae80cece",
+      "caption": "Distance 1000m. You are running. Niv is being.",
+      "tier": "gold",
+      "game": "run-niv",
+      "milestone": "run:dist:1000",
+      "paths": {
+        "avatar64": "/niv/6198ae80cece/avatar-64.webp",
+        "avatar128": "/niv/6198ae80cece/avatar-128.webp",
+        "avatar256": "/niv/6198ae80cece/avatar-256.webp",
+        "portrait720": "/niv/6198ae80cece/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "97bbc912fc83",
+      "caption": "Distance 1500m. The marathon of disrespect.",
+      "tier": "platinum",
+      "game": "run-niv",
+      "milestone": "run:dist:1500",
+      "paths": {
+        "avatar64": "/niv/97bbc912fc83/avatar-64.webp",
+        "avatar128": "/niv/97bbc912fc83/avatar-128.webp",
+        "avatar256": "/niv/97bbc912fc83/avatar-256.webp",
+        "portrait720": "/niv/97bbc912fc83/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "d33d7f2f02b2",
+      "caption": "Flawless run — no stumbles. Niv is jealous and prone.",
+      "tier": "gold",
+      "game": "run-niv",
+      "milestone": "run:flawless",
+      "paths": {
+        "avatar64": "/niv/d33d7f2f02b2/avatar-64.webp",
+        "avatar128": "/niv/d33d7f2f02b2/avatar-128.webp",
+        "avatar256": "/niv/d33d7f2f02b2/avatar-256.webp",
+        "portrait720": "/niv/d33d7f2f02b2/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "3588181d2929",
+      "caption": "Headbutted the very first obstacle. Niv approves.",
+      "tier": "bronze",
+      "game": "run-niv",
+      "milestone": "run:headbutt",
+      "paths": {
+        "avatar64": "/niv/3588181d2929/avatar-64.webp",
+        "avatar128": "/niv/3588181d2929/avatar-128.webp",
+        "avatar256": "/niv/3588181d2929/avatar-256.webp",
+        "portrait720": "/niv/3588181d2929/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "3d3d320640fe",
+      "caption": "Niv hit 3 obstacles in a row. The hat trick of incompetence.",
+      "tier": "silver",
+      "game": "run-niv",
+      "milestone": "run:nivchain:3",
+      "paths": {
+        "avatar64": "/niv/3d3d320640fe/avatar-64.webp",
+        "avatar128": "/niv/3d3d320640fe/avatar-128.webp",
+        "avatar256": "/niv/3d3d320640fe/avatar-256.webp",
+        "portrait720": "/niv/3d3d320640fe/portrait-720.webp"
+      }
+    },
+    {
+      "slug": "e0e6ea88ea05",
+      "caption": "Won and Niv was airborne when the timer ended. Iconic.",
+      "tier": "platinum",
+      "game": "run-niv",
+      "milestone": "run:airborn",
+      "paths": {
+        "avatar64": "/niv/e0e6ea88ea05/avatar-64.webp",
+        "avatar128": "/niv/e0e6ea88ea05/avatar-128.webp",
+        "avatar256": "/niv/e0e6ea88ea05/avatar-256.webp",
+        "portrait720": "/niv/e0e6ea88ea05/portrait-720.webp"
       }
     }
   ]

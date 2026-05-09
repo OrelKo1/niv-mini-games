@@ -17,6 +17,7 @@ const GAMES: Array<{
   { id: "niv-tac-toe", title: "NIV-TAC-TOE", href: "/niv-tac-toe", tagline: "X = Niv. O = joint.", accent: "text-arcade-blue" },
   { id: "brick-niv", title: "BRICK-NIV", href: "/brick-niv", tagline: "Smash adulting.", accent: "text-arcade-red" },
   { id: "whack-a-niv", title: "WHACK-A-NIV", href: "/whack-a-niv", tagline: "Tap the bald.", accent: "text-arcade-purple" },
+  { id: "run-niv", title: "RUN-NIV", href: "/run-niv", tagline: "Race a tripping Niv.", accent: "text-arcade-yellow" },
 ];
 
 export default function Home() {

@@ -6,7 +6,8 @@ export type GameId =
   | "niv-memory"
   | "niv-tac-toe"
   | "brick-niv"
-  | "whack-a-niv";
+  | "whack-a-niv"
+  | "run-niv";
 
 export interface NivAssetPaths {
   avatar64: string;
