@@ -1,4 +1,4 @@
-export const GRID_SIZE = 20;
+export const GRID_SIZE = 15;
 
 export type Dir = "up" | "down" | "left" | "right";
 export type Status = "playing" | "dead";

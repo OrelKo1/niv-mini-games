@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { TouchPad, type Dir as PadDir } from "@/components/arcade/TouchPad";
+import { DPad } from "@/components/arcade/DPad";
 import { GameOver } from "@/components/arcade/GameOver";
 import { NivVideoSplash } from "@/components/arcade/NivVideoSplash";
 import { useAchievements } from "@/lib/achievements/use-achievements";
@@ -17,6 +18,10 @@ import { GRID_SIZE, type SnakeState, type Dir } from "./types";
 
 const HEAD_AVATAR = NIV_MANIFEST.assets[0]?.paths.avatar64 ?? null;
 
+// Internal canvas pixel size per cell. Visual size is set by the CSS wrapper
+// (width: min(92vw, 60dvh)); the canvas image is scaled to fit (pixelated).
+const CELL = 28;
+
 function seedFromTime() {
   return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
 }
@@ -27,7 +32,6 @@ export function Renderer({
   onScoreChange?: (s: SnakeState) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<SnakeState>(createInitialState(makeRng(seedFromTime())));
   const rngRef = useRef(makeRng(seedFromTime() + 1));
   const headImgRef = useRef<HTMLImageElement | null>(null);
@@ -60,24 +64,6 @@ export function Renderer({
     };
     img.src = HEAD_AVATAR;
     headImgRef.current = img;
-  }, []);
-
-  // Resize canvas
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    const canvas = canvasRef.current;
-    if (!wrap || !canvas) return;
-    const ro = new ResizeObserver(() => {
-      const rect = wrap.getBoundingClientRect();
-      const side = Math.floor(Math.min(rect.width, rect.height));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.style.width = `${side}px`;
-      canvas.style.height = `${side}px`;
-      canvas.width = Math.floor(side * dpr);
-      canvas.height = Math.floor(side * dpr);
-    });
-    ro.observe(wrap);
-    return () => ro.disconnect();
   }, []);
 
   const checkMilestones = useCallback(
@@ -321,7 +307,7 @@ export function Renderer({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const handleSwipe = useCallback((d: PadDir) => {
+  const handleDir = useCallback((d: PadDir) => {
     stateRef.current = applyInput(stateRef.current, d);
   }, []);
 
@@ -348,17 +334,24 @@ export function Renderer({
   const showGameOver = status === "dead" && (splashRole === null || splashDone);
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div className="flex-1 flex flex-col items-center justify-around py-3 gap-2 w-full">
       <div
-        ref={wrapRef}
-        className="relative w-[min(100vmin,560px)] h-[min(100vmin,560px)] aspect-square"
+        className="relative"
+        style={{
+          width: "min(92vw, 60dvh)",
+          aspectRatio: "1 / 1",
+        }}
       >
         <canvas
           ref={canvasRef}
-          className="image-pixelated block bg-arcade-black"
+          width={GRID_SIZE * CELL}
+          height={GRID_SIZE * CELL}
+          className="w-full h-full image-pixelated block bg-arcade-black"
+          style={{ imageRendering: "pixelated" }}
         />
-        <TouchPad onSwipe={handleSwipe} />
+        <TouchPad onSwipe={handleDir} />
       </div>
+      <DPad onDir={handleDir} />
       {splashRole && !splashDone && (
         <NivVideoSplash
           role={splashRole}
