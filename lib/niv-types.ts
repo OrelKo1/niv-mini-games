@@ -14,7 +14,7 @@ export interface NivAssetPaths {
   avatar256: string;
   portrait720: string;
   stylized?: Partial<
-    Record<"pixel" | "renaissance" | "anime" | "mona", string>
+    Record<"pixel" | "renaissance" | "anime" | "mona" | "mugshot", string>
   >;
 }
 
