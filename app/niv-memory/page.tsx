@@ -176,31 +176,29 @@ export default function NivMemoryPage() {
     const second = state.cards.find((c) => c.id === state.secondSelection);
     const isMatch = first && second && first.slug === second.slug;
 
-    // If it's a match: short pause, then resolve
-    // If mismatch: longer pause to let player see the cards
     const delay = isMatch ? 400 : REVEAL_MS;
 
-    // show caption banner if the matched card has one
+    let bannerTimer: ReturnType<typeof setTimeout> | undefined;
     if (isMatch && first) {
       const cap = slugToCaption.get(first.slug);
       if (cap) {
         setBanner(cap);
-        const t = setTimeout(() => setBanner(null), 1500);
-        // we cleanup on next effect run
-        return () => clearTimeout(t);
+        bannerTimer = setTimeout(() => setBanner(null), 1500);
       }
     }
 
-    const t = setTimeout(() => {
+    const resolveTimer = setTimeout(() => {
       setState((prev) => {
         if (!prev) return prev;
         if (!bothSelected(prev)) return prev;
-        const wasFirstMatch = prev.streak === 0; // tracking only — fired below
-        void wasFirstMatch;
         return resolve(prev);
       });
     }, delay);
-    return () => clearTimeout(t);
+
+    return () => {
+      clearTimeout(resolveTimer);
+      if (bannerTimer) clearTimeout(bannerTimer);
+    };
   }, [state, slugToCaption]);
 
   // ---- emit milestones on state transitions ----
