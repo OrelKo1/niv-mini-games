@@ -92,7 +92,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/7bdb81da8da3/avatar-64.webp",
         "avatar128": "/niv/7bdb81da8da3/avatar-128.webp",
         "avatar256": "/niv/7bdb81da8da3/avatar-256.webp",
-        "portrait720": "/niv/7bdb81da8da3/portrait-720.webp"
+        "portrait720": "/niv/7bdb81da8da3/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/7bdb81da8da3/stylized-pixel.webp",
+          "renaissance": "/niv/7bdb81da8da3/stylized-renaissance.webp",
+          "anime": "/niv/7bdb81da8da3/stylized-anime.webp",
+          "mugshot": "/niv/7bdb81da8da3/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -222,7 +228,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/292f5384cdf9/avatar-64.webp",
         "avatar128": "/niv/292f5384cdf9/avatar-128.webp",
         "avatar256": "/niv/292f5384cdf9/avatar-256.webp",
-        "portrait720": "/niv/292f5384cdf9/portrait-720.webp"
+        "portrait720": "/niv/292f5384cdf9/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/292f5384cdf9/stylized-pixel.webp",
+          "renaissance": "/niv/292f5384cdf9/stylized-renaissance.webp",
+          "anime": "/niv/292f5384cdf9/stylized-anime.webp",
+          "mugshot": "/niv/292f5384cdf9/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -248,7 +260,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/f61719ce8d3f/avatar-64.webp",
         "avatar128": "/niv/f61719ce8d3f/avatar-128.webp",
         "avatar256": "/niv/f61719ce8d3f/avatar-256.webp",
-        "portrait720": "/niv/f61719ce8d3f/portrait-720.webp"
+        "portrait720": "/niv/f61719ce8d3f/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/f61719ce8d3f/stylized-pixel.webp",
+          "renaissance": "/niv/f61719ce8d3f/stylized-renaissance.webp",
+          "anime": "/niv/f61719ce8d3f/stylized-anime.webp",
+          "mugshot": "/niv/f61719ce8d3f/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -261,7 +279,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/f066823c31c2/avatar-64.webp",
         "avatar128": "/niv/f066823c31c2/avatar-128.webp",
         "avatar256": "/niv/f066823c31c2/avatar-256.webp",
-        "portrait720": "/niv/f066823c31c2/portrait-720.webp"
+        "portrait720": "/niv/f066823c31c2/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/f066823c31c2/stylized-pixel.webp",
+          "renaissance": "/niv/f066823c31c2/stylized-renaissance.webp",
+          "anime": "/niv/f066823c31c2/stylized-anime.webp",
+          "mugshot": "/niv/f066823c31c2/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -339,7 +363,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/23fcd1fe955f/avatar-64.webp",
         "avatar128": "/niv/23fcd1fe955f/avatar-128.webp",
         "avatar256": "/niv/23fcd1fe955f/avatar-256.webp",
-        "portrait720": "/niv/23fcd1fe955f/portrait-720.webp"
+        "portrait720": "/niv/23fcd1fe955f/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/23fcd1fe955f/stylized-pixel.webp",
+          "renaissance": "/niv/23fcd1fe955f/stylized-renaissance.webp",
+          "anime": "/niv/23fcd1fe955f/stylized-anime.webp",
+          "mugshot": "/niv/23fcd1fe955f/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -430,7 +460,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/56b229973f69/avatar-64.webp",
         "avatar128": "/niv/56b229973f69/avatar-128.webp",
         "avatar256": "/niv/56b229973f69/avatar-256.webp",
-        "portrait720": "/niv/56b229973f69/portrait-720.webp"
+        "portrait720": "/niv/56b229973f69/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/56b229973f69/stylized-pixel.webp",
+          "renaissance": "/niv/56b229973f69/stylized-renaissance.webp",
+          "anime": "/niv/56b229973f69/stylized-anime.webp",
+          "mugshot": "/niv/56b229973f69/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -573,7 +609,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/d43ae3427e5b/avatar-64.webp",
         "avatar128": "/niv/d43ae3427e5b/avatar-128.webp",
         "avatar256": "/niv/d43ae3427e5b/avatar-256.webp",
-        "portrait720": "/niv/d43ae3427e5b/portrait-720.webp"
+        "portrait720": "/niv/d43ae3427e5b/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/d43ae3427e5b/stylized-pixel.webp",
+          "renaissance": "/niv/d43ae3427e5b/stylized-renaissance.webp",
+          "anime": "/niv/d43ae3427e5b/stylized-anime.webp",
+          "mugshot": "/niv/d43ae3427e5b/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -651,7 +693,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/f9e391346c4f/avatar-64.webp",
         "avatar128": "/niv/f9e391346c4f/avatar-128.webp",
         "avatar256": "/niv/f9e391346c4f/avatar-256.webp",
-        "portrait720": "/niv/f9e391346c4f/portrait-720.webp"
+        "portrait720": "/niv/f9e391346c4f/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/f9e391346c4f/stylized-pixel.webp",
+          "renaissance": "/niv/f9e391346c4f/stylized-renaissance.webp",
+          "anime": "/niv/f9e391346c4f/stylized-anime.webp",
+          "mugshot": "/niv/f9e391346c4f/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -716,7 +764,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/a76d8ca19331/avatar-64.webp",
         "avatar128": "/niv/a76d8ca19331/avatar-128.webp",
         "avatar256": "/niv/a76d8ca19331/avatar-256.webp",
-        "portrait720": "/niv/a76d8ca19331/portrait-720.webp"
+        "portrait720": "/niv/a76d8ca19331/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/a76d8ca19331/stylized-pixel.webp",
+          "renaissance": "/niv/a76d8ca19331/stylized-renaissance.webp",
+          "anime": "/niv/a76d8ca19331/stylized-anime.webp",
+          "mugshot": "/niv/a76d8ca19331/stylized-mugshot.webp"
+        }
       }
     },
     {
@@ -755,7 +809,13 @@ export const NIV_MANIFEST: NivManifest = {
         "avatar64": "/niv/e261da3b2ce8/avatar-64.webp",
         "avatar128": "/niv/e261da3b2ce8/avatar-128.webp",
         "avatar256": "/niv/e261da3b2ce8/avatar-256.webp",
-        "portrait720": "/niv/e261da3b2ce8/portrait-720.webp"
+        "portrait720": "/niv/e261da3b2ce8/portrait-720.webp",
+        "stylized": {
+          "pixel": "/niv/e261da3b2ce8/stylized-pixel.webp",
+          "renaissance": "/niv/e261da3b2ce8/stylized-renaissance.webp",
+          "anime": "/niv/e261da3b2ce8/stylized-anime.webp",
+          "mugshot": "/niv/e261da3b2ce8/stylized-mugshot.webp"
+        }
       }
     },
     {
