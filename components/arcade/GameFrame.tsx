@@ -22,15 +22,15 @@ export function GameFrame({
   const { currentToast, dismissToast } = useAchievements();
   return (
     <div className="min-h-dvh flex flex-col no-scroll">
-      <header className="flex items-center justify-between px-3 py-2 border-b-2 border-arcade-fg/30 gap-2">
+      <header className="flex items-center justify-between px-3 py-3 border-b-2 border-arcade-fg/30 gap-2">
         <Link
           href="/"
-          className="text-arcade-yellow text-[9px] hover:text-arcade-pink shrink-0"
+          className="text-arcade-yellow text-[11px] hover:text-arcade-pink shrink-0"
         >
           ◄ HOME
         </Link>
-        <h1 className="text-[11px] truncate text-center flex-1">{title}</h1>
-        <div className="text-[9px] text-arcade-fg/70 tabular-nums shrink-0 min-w-16 text-right">
+        <h1 className="text-sm truncate text-center flex-1">{title}</h1>
+        <div className="text-[11px] text-arcade-fg/70 tabular-nums shrink-0 min-w-20 text-right">
           {rightSlot ??
             (typeof score === "number" || typeof highScore === "number" ? (
               <>

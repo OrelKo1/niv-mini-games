@@ -31,11 +31,11 @@ export default function Home() {
       <LobbyMascot avatars={mascots} />
 
       <div className="mt-3 flex flex-col items-center">
-        <h1 className="text-arcade-red text-2xl sm:text-3xl tracking-[0.2em] drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]">
+        <h1 className="text-arcade-red text-3xl sm:text-4xl tracking-[0.2em] drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]">
           NIVTENDO
         </h1>
-        <p className="text-[8px] text-arcade-fg/60 mt-2">© NIV ENTERTAINMENT SYSTEM</p>
-        <p className="text-[10px] text-arcade-yellow mt-3 animate-flash">PRESS START</p>
+        <p className="text-[9px] text-arcade-fg/60 mt-2">© NIV ENTERTAINMENT SYSTEM</p>
+        <p className="text-xs text-arcade-yellow mt-3 animate-flash">PRESS START</p>
       </div>
 
       <ul className="mt-6 w-full max-w-md grid grid-cols-2 gap-3">
@@ -43,20 +43,20 @@ export default function Home() {
           <li key={g.id}>
             <Link
               href={g.href}
-              className="block border-2 border-arcade-fg/40 hover:border-arcade-yellow active:border-arcade-yellow active:bg-arcade-yellow/10 p-3 transition-colors h-full"
+              className="block border-2 border-arcade-fg/40 hover:border-arcade-yellow active:border-arcade-yellow active:bg-arcade-yellow/10 p-4 transition-colors h-full min-h-24"
             >
-              <div className={`text-[11px] ${g.accent}`}>{g.title}</div>
-              <div className="text-[9px] text-arcade-fg/70 mt-1 leading-snug">{g.tagline}</div>
+              <div className={`text-sm ${g.accent}`}>{g.title}</div>
+              <div className="text-xs text-arcade-fg/70 mt-2 leading-snug">{g.tagline}</div>
             </Link>
           </li>
         ))}
       </ul>
 
       <div className="mt-6 flex flex-col items-center gap-3">
-        <Link href="/trophies" className="text-[10px] text-arcade-purple hover:text-arcade-yellow">
+        <Link href="/trophies" className="text-xs text-arcade-purple hover:text-arcade-yellow">
           ► TROPHY ROOM
         </Link>
-        <Link href="/settings" className="text-[9px] text-arcade-fg/40 hover:text-arcade-fg">
+        <Link href="/settings" className="text-[10px] text-arcade-fg/40 hover:text-arcade-fg">
           settings
         </Link>
       </div>

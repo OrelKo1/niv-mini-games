@@ -45,16 +45,16 @@ export default function Trophies() {
   return (
     <div className="min-h-dvh px-4 py-5">
       <div className="flex items-center justify-between gap-2">
-        <Link href="/" className="text-arcade-yellow text-[10px] hover:text-arcade-pink">
+        <Link href="/" className="text-arcade-yellow text-xs hover:text-arcade-pink">
           ◄ HOME
         </Link>
-        <h1 className="text-[12px] tracking-widest">TROPHY ROOM</h1>
-        <div className="text-[9px] tabular-nums text-arcade-fg/70 min-w-12 text-right">
+        <h1 className="text-sm tracking-widest">TROPHY ROOM</h1>
+        <div className="text-[11px] tabular-nums text-arcade-fg/70 min-w-12 text-right">
           {owned}/{total}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-2 text-[8px]">
+      <div className="mt-4 flex items-center justify-between gap-2 text-[10px]">
         <span className="text-arcade-purple">★ PLATINUM {platinumOwned}/{platinumTotal}</span>
         <div className="flex gap-1">
           {(["all", "owned", "locked"] as const).map((f) => (
@@ -62,7 +62,7 @@ export default function Trophies() {
               key={f}
               onClick={() => setFilter(f)}
               className={clsx(
-                "px-2 py-1 border-2",
+                "px-2.5 py-1.5 border-2",
                 filter === f
                   ? "border-arcade-yellow text-arcade-yellow"
                   : "border-arcade-fg/30 text-arcade-fg/60"
@@ -74,7 +74,7 @@ export default function Trophies() {
         </div>
       </div>
 
-      <ul className="mt-4 grid grid-cols-3 sm:grid-cols-4 gap-2">
+      <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
         {visible.map((a) => {
           const has = set.has(a.slug);
           return (
@@ -82,7 +82,7 @@ export default function Trophies() {
               <button
                 onClick={() => has && setFocused(a)}
                 className={clsx(
-                  "relative border-2 p-2 aspect-square w-full flex flex-col items-center justify-center gap-1",
+                  "relative border-2 p-2 aspect-square w-full flex flex-col items-center justify-center gap-1.5",
                   TIER_BORDER[a.tier],
                   !has && "opacity-25 grayscale cursor-not-allowed"
                 )}
@@ -91,11 +91,11 @@ export default function Trophies() {
                 <Image
                   src={a.paths.avatar128}
                   alt=""
-                  width={72}
-                  height={72}
+                  width={104}
+                  height={104}
                   className="image-pixelated"
                 />
-                <span className={clsx("text-[7px]", TIER_LABEL[a.tier])}>
+                <span className={clsx("text-[9px]", TIER_LABEL[a.tier])}>
                   {a.tier.toUpperCase()}
                 </span>
               </button>
