@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --color-arcade-black: #0a0a0a;
+  --color-arcade-fg: #f4f4f4;
+  --color-arcade-red: #e63946;
+  --color-arcade-yellow: #ffd166;
+  --color-arcade-green: #06d6a0;
+  --color-arcade-blue: #118ab2;
+  --color-arcade-purple: #8338ec;
+  --color-arcade-pink: #ff5d8f;
+}
+
+@theme inline {
+  --color-arcade-black: var(--color-arcade-black);
+  --color-arcade-fg: var(--color-arcade-fg);
+  --color-arcade-red: var(--color-arcade-red);
+  --color-arcade-yellow: var(--color-arcade-yellow);
+  --color-arcade-green: var(--color-arcade-green);
+  --color-arcade-blue: var(--color-arcade-blue);
+  --color-arcade-purple: var(--color-arcade-purple);
+  --color-arcade-pink: var(--color-arcade-pink);
+  --font-pixel: var(--font-pixel);
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-pixel {
+  font-family: var(--font-pixel), system-ui, monospace;
+  letter-spacing: 0.02em;
+}
+
+.crt-overlay {
+  position: relative;
+}
+
+.crt-overlay::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.18) 0px,
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 50;
+  mix-blend-mode: multiply;
+}
+
+.no-scroll {
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.image-pixelated {
+  image-rendering: pixelated;
+}
+
+@keyframes toast-in {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 250ms ease-out;
+}
+
+@keyframes flash {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-flash {
+  animation: flash 800ms ease-in-out infinite;
+}

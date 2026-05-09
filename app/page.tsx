@@ -1,0 +1,54 @@
+import Link from "next/link";
+
+const GAMES: Array<{
+  id: string;
+  title: string;
+  href: string;
+  tagline: string;
+  accent: string;
+}> = [
+  { id: "pac-niv", title: "PAC-NIV", href: "/pac-niv", tagline: "Eat joints. Dodge ex.", accent: "text-arcade-yellow" },
+  { id: "snake-niv", title: "SNAKE-NIV", href: "/snake-niv", tagline: "Grow a Niv.", accent: "text-arcade-green" },
+  { id: "niv-memory", title: "NIV-MEMORY", href: "/niv-memory", tagline: "Match the bald.", accent: "text-arcade-pink" },
+  { id: "niv-tac-toe", title: "NIV-TAC-TOE", href: "/niv-tac-toe", tagline: "X = Niv. O = joint.", accent: "text-arcade-blue" },
+  { id: "brick-niv", title: "BRICK-NIV", href: "/brick-niv", tagline: "Smash adulting.", accent: "text-arcade-red" },
+  { id: "whack-a-niv", title: "WHACK-A-NIV", href: "/whack-a-niv", tagline: "Tap the bald.", accent: "text-arcade-purple" },
+];
+
+export default function Home() {
+  return (
+    <div className="min-h-dvh flex flex-col items-center px-4 py-6">
+      <div className="mt-4 flex flex-col items-center">
+        <h1 className="text-arcade-red text-2xl sm:text-3xl tracking-[0.2em] drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]">
+          NIVTENDO
+        </h1>
+        <p className="text-[9px] text-arcade-fg/60 mt-3 animate-flash">PRESS START</p>
+      </div>
+
+      <ul className="mt-8 w-full max-w-md grid grid-cols-2 gap-3">
+        {GAMES.map((g) => (
+          <li key={g.id}>
+            <Link
+              href={g.href}
+              className="block border-2 border-arcade-fg/40 hover:border-arcade-yellow active:border-arcade-yellow active:bg-arcade-yellow/10 p-3 transition-colors h-full"
+            >
+              <div className={`text-[11px] ${g.accent}`}>{g.title}</div>
+              <div className="text-[9px] text-arcade-fg/70 mt-1 leading-snug">{g.tagline}</div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <Link href="/trophies" className="text-[10px] text-arcade-purple hover:text-arcade-yellow">
+          ► TROPHY ROOM
+        </Link>
+        <Link href="/settings" className="text-[9px] text-arcade-fg/40 hover:text-arcade-fg">
+          settings
+        </Link>
+      </div>
+
+      <p className="mt-auto pt-8 text-[8px] text-arcade-fg/30">© NIVTENDO • UNAUTHORIZED USE OF NIV PROHIBITED</p>
+    </div>
+  );
+}
