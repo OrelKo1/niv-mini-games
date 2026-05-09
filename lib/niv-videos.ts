@@ -12,7 +12,7 @@ interface NivVideosManifest {
 }
 export const NIV_VIDEOS: NivVideosManifest = {
   "version": 1,
-  "generatedAt": "2026-05-09T19:19:06.517Z",
+  "generatedAt": "2026-05-09T22:21:43.114Z",
   "videos": [
     {
       "slug": "dancing",
@@ -43,6 +43,18 @@ export const NIV_VIDEOS: NivVideosManifest = {
       "src": "/niv-videos/screaming.mp4",
       "role": "gameover",
       "caption": "Niv objects."
+    },
+    {
+      "slug": "tripping",
+      "src": "/niv-videos/tripping.mp4",
+      "role": "trip",
+      "caption": "Niv has tripped over nothing."
+    },
+    {
+      "slug": "falling",
+      "src": "/niv-videos/falling.mp4",
+      "role": "trip",
+      "caption": "Niv ate the pavement."
     }
   ]
 };
