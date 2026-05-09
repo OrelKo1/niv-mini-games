@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
+import { KonamiListener } from "@/components/arcade/KonamiListener";
+import { NivWantsAWord } from "@/components/arcade/NivWantsAWord";
 
 const pixel = Press_Start_2P({
   subsets: ["latin"],
@@ -31,6 +33,8 @@ export default function RootLayout({
     <html lang="en" className={pixel.variable}>
       <body className="bg-arcade-black text-arcade-fg font-pixel min-h-dvh antialiased">
         <div className="crt-overlay min-h-dvh">{children}</div>
+        <KonamiListener />
+        <NivWantsAWord />
       </body>
     </html>
   );

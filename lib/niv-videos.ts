@@ -5,7 +5,12 @@ export interface NivVideo {
   role: string;
   caption: string;
 }
-export const NIV_VIDEOS = {
+interface NivVideosManifest {
+  version: 1;
+  generatedAt: string;
+  videos: NivVideo[];
+}
+export const NIV_VIDEOS: NivVideosManifest = {
   "version": 1,
   "generatedAt": "2026-05-09T19:19:06.517Z",
   "videos": [
@@ -40,4 +45,4 @@ export const NIV_VIDEOS = {
       "caption": "Niv objects."
     }
   ]
-} as const;
+};

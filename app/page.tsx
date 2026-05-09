@@ -1,4 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
+import { NIV_MANIFEST } from "@/lib/niv-manifest";
+import { AttractMode } from "@/components/arcade/AttractMode";
+import { LobbyMascot } from "@/components/arcade/LobbyMascot";
 
 const GAMES: Array<{
   id: string;
@@ -16,16 +20,25 @@ const GAMES: Array<{
 ];
 
 export default function Home() {
+  // Pick a small rotation of mascot avatars (server-side stable per request)
+  const mascots = NIV_MANIFEST.assets
+    .filter((_, i) => i % 7 === 0)
+    .slice(0, 6)
+    .map((a) => a.paths.avatar128);
+
   return (
-    <div className="min-h-dvh flex flex-col items-center px-4 py-6">
-      <div className="mt-4 flex flex-col items-center">
+    <div className="min-h-dvh flex flex-col items-center px-4 py-5">
+      <LobbyMascot avatars={mascots} />
+
+      <div className="mt-3 flex flex-col items-center">
         <h1 className="text-arcade-red text-2xl sm:text-3xl tracking-[0.2em] drop-shadow-[2px_2px_0_rgba(0,0,0,0.8)]">
           NIVTENDO
         </h1>
-        <p className="text-[9px] text-arcade-fg/60 mt-3 animate-flash">PRESS START</p>
+        <p className="text-[8px] text-arcade-fg/60 mt-2">© NIV ENTERTAINMENT SYSTEM</p>
+        <p className="text-[10px] text-arcade-yellow mt-3 animate-flash">PRESS START</p>
       </div>
 
-      <ul className="mt-8 w-full max-w-md grid grid-cols-2 gap-3">
+      <ul className="mt-6 w-full max-w-md grid grid-cols-2 gap-3">
         {GAMES.map((g) => (
           <li key={g.id}>
             <Link
@@ -48,7 +61,34 @@ export default function Home() {
         </Link>
       </div>
 
-      <p className="mt-auto pt-8 text-[8px] text-arcade-fg/30">© NIVTENDO • UNAUTHORIZED USE OF NIV PROHIBITED</p>
+      <div className="mt-auto pt-8 flex flex-col items-center gap-1">
+        {(() => {
+          const fortune = ROTATING_FOOTER[
+            Math.floor((Date.now() / (1000 * 60 * 5)) % ROTATING_FOOTER.length)
+          ];
+          return (
+            <p className="text-[8px] text-arcade-fg/40 max-w-xs text-center leading-snug">
+              {fortune}
+            </p>
+          );
+        })()}
+        <p className="text-[7px] text-arcade-fg/20 mt-2">
+          NO NIV WAS HARMED. ACCORDING TO NIV.
+        </p>
+      </div>
+
+      <AttractMode />
     </div>
   );
 }
+
+const ROTATING_FOOTER = [
+  "today's lucky number is whatever Niv decides.",
+  "Niv is sponsored by his own self-image.",
+  "this site has been independently certified by Niv.",
+  "the music in your head is also Niv.",
+  "if you see a bug, that's Niv saying hi.",
+  "Niv is taking the day off. The site is running on hope.",
+  "100% organic Niv. No artificial Niv.",
+  "every pixel was reviewed by Niv. He approved 60% of them.",
+];
