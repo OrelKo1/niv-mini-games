@@ -59,7 +59,7 @@ const SPECS: VideoSpec[] = [
     role: 'gameover',
     caption: 'Niv objects.',
     prompt:
-      'The bearded man is yelling NOOO at the camera with mock outrage, hands clutching his head, mouth wide open in slow motion. 8 seconds.',
+      'The bearded man dramatically clutches his head with both hands in playful mock disbelief, wide eyes, exaggerated cartoon shocked expression, head shaking slowly side to side, no audio dialogue. Cinematic 8 seconds.',
   },
 ];
 
