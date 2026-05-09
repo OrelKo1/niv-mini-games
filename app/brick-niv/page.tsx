@@ -15,6 +15,7 @@ import {
   FIELD_W,
   type BrickState,
 } from "@/games/brick-niv/types";
+import { pickFaceForGame } from "@/lib/niv/face-pool";
 
 const ADULTING_MILESTONES: Record<string, string> = {
   "Pay rent": "brick:rent",
@@ -30,10 +31,14 @@ export default function BrickNivPage() {
   const { fire } = useAchievements();
 
   const stateRef = useRef<BrickState>(start(1));
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [, setRenderTick] = useState(0);
   const [splashRole, setSplashRole] = useState<string | null>(null);
   const [showGameOver, setShowGameOver] = useState(false);
   const [isHighScore, setIsHighScore] = useState(false);
+  const [faceUrl, setFaceUrl] = useState(
+    () => pickFaceForGame("brick-niv").paths.avatar128
+  );
 
   // milestone tracking flags (per game session)
   const flagsRef = useRef({
@@ -59,6 +64,7 @@ export default function BrickNivPage() {
     flagsRef.current.burstWindow = [];
     setShowGameOver(false);
     setIsHighScore(false);
+    setFaceUrl(pickFaceForGame("brick-niv").paths.avatar128);
   }, []);
 
   // initial mount: fire firstgame
@@ -188,10 +194,13 @@ export default function BrickNivPage() {
     return () => loop.stop();
   }, [fire, recordScore]);
 
-  const onPan = useCallback((x: number, _y: number, rect: DOMRect) => {
+  const onPan = useCallback((x: number, _y: number, _rect: DOMRect) => {
     const s = stateRef.current;
     if (s.status !== "playing") return;
-    const rel = (x - rect.left) / rect.width;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const r = canvas.getBoundingClientRect();
+    const rel = (x - r.left) / r.width;
     setPaddleX(s, Math.max(0, Math.min(1, rel)) * FIELD_W);
   }, []);
 
@@ -222,7 +231,7 @@ export default function BrickNivPage() {
       footer={footer}
     >
       <div className="absolute inset-0">
-        <Renderer stateRef={stateRef} />
+        <Renderer stateRef={stateRef} canvasRef={canvasRef} faceUrl={faceUrl} />
       </div>
       <TouchPad onPan={onPan} onTap={onTap} />
 

@@ -9,9 +9,9 @@ export const BALL_R = 4;
 export const BALL_BASE_SPEED = 0.18; // px/ms
 
 export const BRICK_ROWS = 5;
-export const BRICK_COLS = 8;
-export const BRICK_W = 40;
-export const BRICK_H = 16;
+export const BRICK_COLS = 5;
+export const BRICK_W = 60;
+export const BRICK_H = 20;
 export const BRICK_TOP_PAD = 50;
 export const BRICK_LEFT_PAD = 20;
 export const BRICK_GAP = 4;

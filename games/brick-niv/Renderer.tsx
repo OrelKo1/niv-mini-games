@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import type { RefObject } from "react";
 import {
   BALL_R,
   FIELD_H,
@@ -34,20 +35,29 @@ function brickColor(brick: { hp: number; maxHp: number }): string {
   return palette[idx % palette.length];
 }
 
-export function Renderer({ stateRef }: { stateRef: { current: BrickState } }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+type RendererProps = {
+  stateRef: { current: BrickState };
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  faceUrl: string;
+};
+
+export function Renderer({ stateRef, canvasRef, faceUrl }: RendererProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const faceImgRef = useRef<HTMLImageElement | null>(null);
   const rafRef = useRef<number>(0);
 
-  // Load Niv face once
+  // Load Niv face when faceUrl changes
   useEffect(() => {
+    if (!faceUrl) return;
     const img = new Image();
-    img.src = "/niv/cb2aea18265e/avatar-128.webp";
+    img.src = faceUrl;
     img.onload = () => {
       faceImgRef.current = img;
     };
-  }, []);
+    return () => {
+      faceImgRef.current = null;
+    };
+  }, [faceUrl]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -100,11 +110,11 @@ export function Renderer({ stateRef }: { stateRef: { current: BrickState } }) {
         ctx.lineWidth = 1;
         ctx.strokeRect(b.x * sx, b.y * sy, b.w * sx, b.h * sy);
         // label
-        ctx.fillStyle = "#0a0a0a";
-        const fontPx = Math.max(6, Math.floor(6 * sy));
-        ctx.font = `${fontPx}px ui-monospace, monospace`;
+        const labelFont = Math.max(11, Math.floor(b.w * 0.18 * sx));
+        ctx.font = `${labelFont}px "Press Start 2P", monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        ctx.fillStyle = "#fff";
         ctx.fillText(
           b.label,
           (b.x + b.w / 2) * sx,
@@ -175,7 +185,7 @@ export function Renderer({ stateRef }: { stateRef: { current: BrickState } }) {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
     };
-  }, [stateRef]);
+  }, [stateRef, canvasRef]);
 
   return (
     <div
