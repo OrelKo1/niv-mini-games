@@ -6,7 +6,7 @@ interface BoardProps {
   board: BoardT;
   onCellClick: (idx: number) => void;
   disabled: boolean;
-  nivAvatarSrc: string;
+  faceUrl: string;
   winningLine: readonly number[] | null;
 }
 
@@ -14,7 +14,7 @@ export function Board({
   board,
   onCellClick,
   disabled,
-  nivAvatarSrc,
+  faceUrl,
   winningLine,
 }: BoardProps) {
   return (
@@ -30,7 +30,7 @@ export function Board({
             value={cell}
             onClick={() => onCellClick(idx)}
             disabled={disabled || cell !== null}
-            nivAvatarSrc={nivAvatarSrc}
+            faceUrl={faceUrl}
             highlighted={isWin}
           />
         );
@@ -43,13 +43,13 @@ function BoardCell({
   value,
   onClick,
   disabled,
-  nivAvatarSrc,
+  faceUrl,
   highlighted,
 }: {
   value: Cell;
   onClick: () => void;
   disabled: boolean;
-  nivAvatarSrc: string;
+  faceUrl: string;
   highlighted: boolean;
 }) {
   return (
@@ -72,7 +72,7 @@ function BoardCell({
       {value === "X" && (
         <div className="flex flex-col items-center justify-center gap-1">
           <Image
-            src={nivAvatarSrc}
+            src={faceUrl}
             alt="Niv X"
             width={64}
             height={64}

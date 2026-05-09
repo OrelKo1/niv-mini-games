@@ -4,7 +4,7 @@ import { GameFrame } from "@/components/arcade/GameFrame";
 import { NivVideoSplash } from "@/components/arcade/NivVideoSplash";
 import { useAchievements } from "@/lib/achievements/use-achievements";
 import { useNivStore } from "@/lib/store/use-niv-store";
-import { NIV_MANIFEST } from "@/lib/niv-manifest";
+import { pickFaceForGame } from "@/lib/niv/face-pool";
 import { Board } from "@/games/niv-tac-toe/Board";
 import {
   availableCells,
@@ -44,13 +44,6 @@ const SOBER_BANTER = [
 // Ad-hoc cumulative state stored in the existing highScores slot.
 const PLAYED_KEY = "niv-tac-toe" as const;
 
-// Pick the first niv-tac-toe-tagged asset for the X avatar; fall back to first manifest asset.
-function pickNivAvatar(): string {
-  const xoAsset = NIV_MANIFEST.assets.find((a) => a.game === "niv-tac-toe");
-  const fallback = NIV_MANIFEST.assets[0];
-  return (xoAsset ?? fallback)?.paths.avatar64 ?? "/niv/avatar-64.webp";
-}
-
 function findWinningLine(board: BoardT): readonly number[] | null {
   for (const line of WINNING_LINES) {
     const [a, b, c] = line;
@@ -82,7 +75,14 @@ export default function NivTacToePage() {
   const drawStreakRef = useRef(0);
   const finishedRef = useRef(false);
 
-  const nivAvatarSrc = useMemo(() => pickNivAvatar(), []);
+  const [faceUrl, setFaceUrl] = useState<string>(
+    () => pickFaceForGame("niv-tac-toe").paths.avatar128
+  );
+
+  const newFace = useCallback(() => {
+    setFaceUrl(pickFaceForGame("niv-tac-toe").paths.avatar128);
+  }, []);
+
   const result = winner(board);
   const gameOver = result !== null;
   const winningLine = useMemo(() => findWinningLine(board), [board]);
@@ -192,8 +192,9 @@ export default function NivTacToePage() {
       setShowVictoryVideo(false);
       const pool = diff === "stoned" ? STONED_BANTER : SOBER_BANTER;
       setBanter(pool[0]);
+      newFace();
     },
-    [difficulty]
+    [difficulty, newFace]
   );
 
   const handleDifficultyChange = useCallback(
@@ -201,8 +202,9 @@ export default function NivTacToePage() {
       if (diff === difficulty) return;
       setDifficulty(diff);
       startNewGame(diff);
+      newFace();
     },
-    [difficulty, startNewGame]
+    [difficulty, startNewGame, newFace]
   );
 
   const overlayCaption = useMemo(() => {
@@ -267,7 +269,7 @@ export default function NivTacToePage() {
           board={board}
           onCellClick={handleCellClick}
           disabled={gameOver || turn !== "X"}
-          nivAvatarSrc={nivAvatarSrc}
+          faceUrl={faceUrl}
           winningLine={winningLine}
         />
 
